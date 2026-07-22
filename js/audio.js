@@ -39,6 +39,7 @@
         this.analyser.smoothingTimeConstant = 0.75;
         this.freq = new Uint8Array(this.analyser.frequencyBinCount);
         this.wave = new Uint8Array(this.analyser.fftSize); // time-domain (oscilloscope)
+        this.streamDest = this.ctx.createMediaStreamDestination(); // for AirPlay audio (file only)
       }
       if (this.ctx.state === 'suspended') this.ctx.resume();
     }
@@ -96,6 +97,7 @@
       this.sourceNode = this.ctx.createMediaElementSource(el);
       this.sourceNode.connect(this.analyser);
       this.analyser.connect(this.ctx.destination); // file audio should be audible
+      this.sourceNode.connect(this.streamDest);    // and available to the AirPlay stream
       this.sourceType = 'file';
       await el.play();
       this.playing = true;
@@ -112,6 +114,16 @@
         else { this.ctx.resume(); this.playing = true; }
       }
       return this.playing;
+    }
+
+    // Audio track for the AirPlay/cast stream — only for the file source
+    // (never the mic, to avoid casting the room / feedback).
+    getAudioTrack() {
+      if (this.sourceType === 'file' && this.streamDest) {
+        const tr = this.streamDest.stream.getAudioTracks();
+        return tr.length ? tr[0] : null;
+      }
+      return null;
     }
 
     _binForHz(hz) {

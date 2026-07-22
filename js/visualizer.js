@@ -9,7 +9,8 @@
 
   const SCENES = ['Tunnel', 'Nebula', 'Kaleidoscope', 'Synthwave', 'Star Warp',
                   'Aurora', 'Ridges', 'Chrome', 'Cells', 'Plasma', 'Fractal', 'Spectrum',
-                  'Waveform', 'Hex', 'Rings', 'Fireflies'];
+                  'Waveform', 'Hex', 'Rings', 'Fireflies',
+                  'Vortex', 'Matrix', 'Sunburst', 'Warp'];
 
   const VERT = `
     attribute vec2 aPos;
@@ -369,6 +370,70 @@
     return col;
   }
 
+  // ---- Scene 16: vortex / spiral galaxy ----
+  vec3 sceneVortex(vec2 uv){
+    float r = length(uv) + 0.001;
+    float a = atan(uv.y, uv.x);
+    float arms = 2.0 + floor(uMid*4.0);
+    float spiral = sin(a*arms + log(r)*6.0 - uTime*2.0 - uBass*4.0);
+    float s = pow(smoothstep(0.0, 0.85, spiral), 1.5);
+    float hue = uHue + r*0.2 + a*0.04;
+    float bright = s*(0.45 + uLevel*1.2)*smoothstep(1.5, 0.05, r);
+    vec3 col = hsv2rgb(vec3(fract(hue), uSat, bright));
+    col += hsv2rgb(vec3(fract(uHue+0.1), uSat, 1.0))*smoothstep(0.14, 0.0, r)*(0.5 + uBeat);
+    return col;
+  }
+
+  // ---- Scene 17: digital rain (Matrix) ----
+  vec3 sceneMatrix(vec2 uv){
+    float cols = 40.0;
+    float x = uv.x*0.5 + 0.5;
+    float colId = floor(x*cols);
+    float fx = fract(x*cols);
+    float speed = 0.4 + hash(vec2(colId, 1.0))*1.2;
+    float t = uTime*speed + hash(vec2(colId, 2.0))*10.0;
+    float yy = uv.y*0.5 + 0.5;
+    float headY = 1.0 - fract(t*0.5);                 // head falls downward
+    float d = yy - headY;                             // >0 = trail above head
+    float trail = d > 0.0 ? exp(-d*6.0) : 0.0;
+    float cellY = floor(yy*30.0);
+    float flick = step(0.35, hash(vec2(colId, cellY + floor(t*8.0))));
+    float bar = smoothstep(0.5, 0.16, abs(fx - 0.5));
+    float v = trail*flick*bar;
+    vec3 col = hsv2rgb(vec3(fract(uHue + 0.33), uSat, 1.0))*v*(0.6 + uLevel);
+    col += vec3(1.0)*smoothstep(0.05, 0.0, abs(d))*flick*bar*0.85; // bright head
+    return col + vec3(0.0, 0.012, 0.0);
+  }
+
+  // ---- Scene 18: sunburst rays ----
+  vec3 sceneSunburst(vec2 uv){
+    float r = length(uv);
+    float a = atan(uv.y, uv.x);
+    float rays = 12.0 + floor(uMid*14.0);
+    float ray = pow(0.5 + 0.5*sin(a*rays + uTime + uBass*3.0), 2.0);
+    float hue = uHue + a*0.06 + r*0.1;
+    float core = smoothstep(0.45, 0.0, r);
+    float bright = ray*(0.4 + uLevel)*smoothstep(1.4, 0.1, r) + core;
+    vec3 col = hsv2rgb(vec3(fract(hue), uSat, bright));
+    col += vec3(1.0)*core*(0.5 + uBeat*0.6);
+    return col;
+  }
+
+  // ---- Scene 19: square tunnel warp ----
+  vec3 sceneWarp(vec2 uv){
+    uv *= rot(sin(uTime*0.1)*0.2);
+    float sq = max(abs(uv.x), abs(uv.y)) + 0.001;
+    float depth = 0.4/sq + uTime*0.8 + uBass*1.6;
+    float rings = smoothstep(0.8, 1.0, sin(depth*8.0));
+    float a = atan(uv.y, uv.x);
+    float edges = 0.5 + 0.5*sin(a*8.0 + uTime);
+    float hue = uHue + depth*0.02 + edges*0.05;
+    float glow = rings*(0.5 + uLevel*1.2);
+    vec3 col = hsv2rgb(vec3(fract(hue), uSat, glow));
+    col *= smoothstep(0.0, 0.3, sq);
+    return col / (sq*1.5 + 0.3);
+  }
+
   vec3 renderScene(int idx, vec2 uv){
     if(idx==0) return sceneTunnel(uv);
     if(idx==1) return sceneNebula(uv);
@@ -385,7 +450,11 @@
     if(idx==12) return sceneWave(uv);
     if(idx==13) return sceneHex(uv);
     if(idx==14) return sceneRings(uv);
-    return sceneFireflies(uv);
+    if(idx==15) return sceneFireflies(uv);
+    if(idx==16) return sceneVortex(uv);
+    if(idx==17) return sceneMatrix(uv);
+    if(idx==18) return sceneSunburst(uv);
+    return sceneWarp(uv);
   }
 
   // ---- Film / aesthetic grades applied over any scene ----

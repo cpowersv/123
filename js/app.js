@@ -213,7 +213,12 @@
     if (airVideo) return airVideo;
     const v = $('airplayVideo');
     try {
-      if (canvas.captureStream) v.srcObject = canvas.captureStream(30); // mirror the live visuals
+      if (canvas.captureStream) {
+        const stream = canvas.captureStream(30); // mirror the live visuals
+        const track = audio.getAudioTrack && audio.getAudioTrack();
+        if (track) stream.addTrack(track);        // carry the music (file source) over AirPlay
+        v.srcObject = stream;
+      }
     } catch (e) {}
     v.addEventListener('webkitcurrentplaybacktargetiswirelesschanged', () => {
       const on = !!v.webkitCurrentPlaybackTargetIsWireless;

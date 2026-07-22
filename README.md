@@ -14,12 +14,12 @@ required). Open `index.html` and go.
 - **Reacts to real audio in real time.** A Web Audio FFT splits the sound into
   **bass / mid / treble / level** and detects **beats**, which drive everything
   on screen.
-- **Sixteen GPU shader scenes:** Wormhole Tunnel · Nebula · Kaleidoscope ·
-  Synthwave Horizon · Star Warp · Aurora (liquid ribbons) · Ridges (audio
-  terrain) · Chrome (liquid metal) · Cells (pulsing voronoi) · Plasma ·
-  Fractal (animated Julia) · Spectrum (real FFT bars) · Waveform
-  (oscilloscope) · Hex (honeycomb pulse) · Rings (beat shockwaves) ·
-  Fireflies — each with cinematic post (glow/bloom, vignette, grain, flash).
+- **Twenty GPU shader scenes:** Tunnel · Nebula · Kaleidoscope · Synthwave ·
+  Star Warp · Aurora · Ridges (audio terrain) · Chrome (liquid metal) ·
+  Cells · Plasma · Fractal (animated Julia) · Spectrum (real FFT bars) ·
+  Waveform (oscilloscope) · Hex · Rings (beat shockwaves) · Fireflies ·
+  Vortex (spiral galaxy) · Matrix (digital rain) · Sunburst · Warp (square
+  tunnel) — each with cinematic post (glow/bloom, vignette, grain, flash).
 - **Film looks:** Noir B&W · Vintage · VHS Retro · Pop Art · Cinematic —
   an aesthetic grade layered over any scene.
 - **Autopilot:** a self-running show that auto-cycles the whole look
