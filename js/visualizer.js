@@ -10,7 +10,8 @@
   const SCENES = ['Tunnel', 'Nebula', 'Kaleidoscope', 'Synthwave', 'Star Warp',
                   'Aurora', 'Ridges', 'Chrome', 'Cells', 'Plasma', 'Fractal', 'Spectrum',
                   'Waveform', 'Hex', 'Rings', 'Fireflies',
-                  'Vortex', 'Matrix', 'Sunburst', 'Warp'];
+                  'Vortex', 'Matrix', 'Sunburst', 'Warp',
+                  'Van Gogh', 'Pop Art', 'Watercolor', 'Impressionist'];
 
   const VERT = `
     attribute vec2 aPos;
@@ -434,6 +435,81 @@
     return col / (sq*1.5 + 0.3);
   }
 
+  // ---- Scene 20: Van Gogh — Starry Night brushwork ----
+  vec3 sceneVanGogh(vec2 uv){
+    vec2 p = uv*2.0;
+    float t = uTime*0.12;
+    float ang = fbm(p*0.8 + t + uBass*0.3)*6.2831;      // swirling flow field
+    vec2 flow = vec2(cos(ang), sin(ang));
+    float stroke = sin(dot(p, flow)*18.0 + fbm(p*3.0)*6.0);  // impasto brush ridges
+    float swirl = fbm(p*1.5 + flow*0.6);
+    float hue = uHue + swirl*0.14 + stroke*0.02;
+    float v = clamp((0.32 + 0.42*swirl + 0.18*stroke) * (0.7 + uLevel*0.6), 0.0, 1.0);
+    vec3 col = hsv2rgb(vec3(fract(hue), uSat*0.9, v));
+    for(int i=0;i<10;i++){                               // glowing yellow stars
+      float fi = float(i);
+      vec2 sp = (hash2(vec2(fi, 3.0))*2.0 - 1.0) * vec2(1.7, 0.95);
+      float d = length(uv - sp);
+      float star = smoothstep(0.03, 0.0, d);
+      float halo = smoothstep(0.16, 0.0, d)*(0.55 + 0.45*sin(uTime*2.0 + fi));
+      col += hsv2rgb(vec3(0.13, 0.85, 1.0))*(star + halo*0.35)*(0.6 + uTreble);
+    }
+    return col;
+  }
+
+  // ---- Scene 21: Pop Art — Warhol panels + halftone ----
+  vec3 scenePopArt(vec2 uv){
+    vec2 g = (uv*0.5 + 0.5)*2.0;
+    vec2 cell = floor(g);
+    vec2 luv = fract(g)*2.0 - 1.0;
+    float r = length(luv);
+    float subj = smoothstep(0.85, 0.15, r) + 0.25*sin(luv.x*8.0 + uTime)*step(r, 0.7);
+    vec2 hp = (uv*0.5 + 0.5)*44.0;
+    float dot = length(fract(hp) - 0.5);
+    float halftone = smoothstep(0.26 + 0.18*subj, 0.24 + 0.18*subj, dot);
+    float cid = cell.x + cell.y*2.0;
+    float baseHue = fract(uHue + cid*0.25 + floor(uTime*0.5)*0.13);
+    vec3 bg = hsv2rgb(vec3(baseHue, 1.0, 0.9));
+    vec3 fg = hsv2rgb(vec3(fract(baseHue + 0.5), 1.0, 1.0));
+    vec3 col = mix(bg, fg, clamp(subj, 0.0, 1.0));
+    col = mix(col*0.35, col, halftone);
+    col = floor(col*5.0 + 0.5)/5.0;                      // posterize
+    return col*(0.7 + uLevel*0.5);
+  }
+
+  // ---- Scene 22: Watercolor washes ----
+  vec3 sceneWatercolor(vec2 uv){
+    vec2 p = uv*1.5;
+    float t = uTime*0.05;
+    float f1 = fbm(p + t);
+    float f2 = fbm(p*1.3 - t + f1 + uBass*0.3);
+    float f3 = fbm(p*0.7 + f2);
+    float hue = uHue + f3*0.28 + f1*0.1;
+    vec3 col = hsv2rgb(vec3(fract(hue), uSat*0.5, 0.76 + 0.2*f3)); // pastel
+    float e = fbm(p*3.0);
+    col *= 0.82 + 0.18*smoothstep(0.4, 0.6, e);
+    col -= 0.16*smoothstep(0.47, 0.5, abs(f2 - 0.5));    // pigment edge darkening
+    col += (hash(uv*300.0) - 0.5)*0.04;                  // paper grain
+    return clamp(col*(0.85 + uLevel*0.4), 0.0, 1.0);
+  }
+
+  // ---- Scene 23: Impressionist dabs ----
+  vec3 sceneImpressionist(vec2 uv){
+    vec2 p = uv*1.2;
+    float base = fbm(p*1.5 + uTime*0.05);
+    float hue = uHue + base*0.3;
+    vec3 col = hsv2rgb(vec3(fract(hue), uSat*0.8, 0.4 + 0.4*base));
+    vec2 grid = uv*14.0;
+    vec2 id = floor(grid);
+    vec2 f = fract(grid) - 0.5;
+    vec2 jit = (hash2(id) - 0.5)*0.6;
+    float dab = smoothstep(0.5, 0.1, length(f - jit));
+    float dhue = hue + (hash(id) - 0.5)*0.2;
+    vec3 dabCol = hsv2rgb(vec3(fract(dhue), uSat*0.9, 0.6 + 0.4*hash(id + 1.0)));
+    col = mix(col, dabCol, dab*0.8);
+    return col*(0.7 + uLevel*0.5);
+  }
+
   vec3 renderScene(int idx, vec2 uv){
     if(idx==0) return sceneTunnel(uv);
     if(idx==1) return sceneNebula(uv);
@@ -454,7 +530,11 @@
     if(idx==16) return sceneVortex(uv);
     if(idx==17) return sceneMatrix(uv);
     if(idx==18) return sceneSunburst(uv);
-    return sceneWarp(uv);
+    if(idx==19) return sceneWarp(uv);
+    if(idx==20) return sceneVanGogh(uv);
+    if(idx==21) return scenePopArt(uv);
+    if(idx==22) return sceneWatercolor(uv);
+    return sceneImpressionist(uv);
   }
 
   // ---- Film / aesthetic grades applied over any scene ----

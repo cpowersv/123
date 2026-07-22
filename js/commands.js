@@ -71,6 +71,27 @@
     { name: 'Cinematic', keys: ['cinematic look', 'cinema', 'film look', 'letterbox', 'teal orange', 'widescreen'], p: { look: 5 } },
   ];
 
+  /* ---- Art styles: recognizable painting / movement looks ---- */
+  // Scene indices map to visualizer.js SCENES order.
+  const ARTSTYLES = [
+    { name: 'Van Gogh',      keys: ['van gogh', 'starry night', 'starry', 'post-impressionism'],
+      p: { scene: 20, hue: 0.62, saturation: 0.95, look: 0 } },
+    { name: 'Pop Art',       keys: ['pop art', 'warhol', 'comic pop'],
+      p: { scene: 21, saturation: 1.0, look: 0 } },
+    { name: 'Watercolor',    keys: ['watercolor', 'watercolour', 'aquarelle'],
+      p: { scene: 22, saturation: 0.5, look: 0 } },
+    { name: 'Impressionist', keys: ['impressionist', 'impressionism', 'monet', 'dabs'],
+      p: { scene: 23, saturation: 0.8, look: 0 } },
+    { name: 'Cyberpunk',     keys: ['cyberpunk', 'neon city', 'blade runner'],
+      p: { scene: 0, hue: 0.78, saturation: 1.0, look: 0 } },
+    { name: 'Surreal',       keys: ['surreal', 'surrealism', 'dali', 'dreamscape'],
+      p: { scene: 5, saturation: 0.7, look: 2 } },
+    { name: 'Renaissance',   keys: ['renaissance', 'classical art', 'baroque', 'oil painting'],
+      p: { scene: 22, hue: 0.09, saturation: 0.6, look: 2 } },
+    { name: 'Photograph',    keys: ['photograph', 'photographic', 'sunset photo', 'landscape photo'],
+      p: { scene: 3, hue: 0.06, saturation: 0.85, look: 5 } },
+  ];
+
   /* ---- Cinematic desires: overlay the "director's intent" ---- */
   const CINEMATIC = [
     { name: 'Epic Build',  keys: ['epic', 'build', 'buildup', 'grand', 'anthemic', 'cinematic'],
@@ -114,7 +135,7 @@
   function sortByKeyLen(list) {
     return list.slice().sort((a, b) => Math.max(...b.keys.map(k => k.length)) - Math.max(...a.keys.map(k => k.length)));
   }
-  const ALL = sortByKeyLen([...GENRES, ...CINEMATIC, ...LOOKS, ...MOODS]);
+  const ALL = sortByKeyLen([...GENRES, ...ARTSTYLES, ...CINEMATIC, ...LOOKS, ...MOODS]);
 
   function parseCommand(text) {
     // Normalize, then match longest phrases first, consuming each match so a
@@ -149,5 +170,5 @@
   const findGenre = (q) => findIn(GENRES, q);
   const findMood = (q) => findIn(CINEMATIC, q);
 
-  global.Commands = { parseCommand, SCENE, GENRES, CINEMATIC, LOOKS, findGenre, findMood, slug };
+  global.Commands = { parseCommand, SCENE, GENRES, CINEMATIC, LOOKS, ARTSTYLES, findGenre, findMood, slug };
 })(window);
