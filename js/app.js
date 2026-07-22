@@ -75,6 +75,34 @@
   buildChips('genreChips', Commands.GENRES, 'genre');
   buildChips('moodChips', Commands.CINEMATIC, 'mood');
 
+  /* ---------------- Autopilot (self-running show) ---------------- */
+  const autopilot = { on: false, timer: 0, interval: 20 };
+
+  function setAutopilot(on) {
+    autopilot.on = on;
+    autopilot.timer = 0;
+    $('btnPilot').classList.toggle('on', on);
+    if (on) { director.autoDirect = true; $('btnAuto').classList.add('on'); }
+  }
+
+  // Pick a fresh random genre + occasional cinematic mood, and apply it.
+  function autopilotStep() {
+    const g = Commands.GENRES[Math.floor(Math.random() * Commands.GENRES.length)];
+    director.applyCommand(g.p);
+    if (Math.random() < 0.5) {
+      const m = Commands.CINEMATIC[Math.floor(Math.random() * Commands.CINEMATIC.length)];
+      director.applyCommand(m.p);
+    }
+    $('intensity').value = Math.round(director.target.intensity * 100);
+    $('hue').value = Math.round(director.target.hue * 100);
+    if (!document.body.classList.contains('kiosk')) toast('🛸 ' + g.name);
+  }
+
+  $('btnPilot').addEventListener('click', () => {
+    setAutopilot(!autopilot.on);
+    toast(autopilot.on ? '🛸 Autopilot on — it runs itself' : 'Autopilot off');
+  });
+
   function toggleStyle(force) {
     const panel = $('stylePanel');
     const show = force !== undefined ? force : panel.classList.contains('hidden');
@@ -170,6 +198,7 @@
       case 'f': toggleFullscreen(); break;
       case 'a': $('btnAuto').click(); break;
       case 'g': toggleStyle(); break;
+      case 'p': $('btnPilot').click(); break;
       case 'h': document.body.classList.toggle('idle'); break;
       case 'arrowleft': director.setHue((director.target.hue + 0.95) % 1); $('hue').value = Math.round(director.target.hue*100); break;
       case 'arrowright': director.setHue((director.target.hue + 0.05) % 1); $('hue').value = Math.round(director.target.hue*100); break;
@@ -193,7 +222,7 @@
   /* ---------------- Share / embed ---------------- */
   const clamp01 = (v) => Math.max(0, Math.min(1, v));
 
-  function buildShareUrl(kioskFlag) {
+  function buildShareUrl(kioskFlag, pilotFlag) {
     const s = director.snapshot();
     const base = location.origin && location.origin !== 'null'
       ? location.origin + location.pathname : location.href.split('?')[0];
@@ -206,11 +235,12 @@
     p.set('kick', s.kick);
     p.set('auto', s.auto);
     if (kioskFlag) p.set('kiosk', '1');
+    if (pilotFlag) p.set('autopilot', '1');
     return base + '?' + p.toString();
   }
 
   function refreshShare() {
-    const url = buildShareUrl($('embedKiosk').checked);
+    const url = buildShareUrl($('embedKiosk').checked, $('embedPilot').checked);
     $('shareLink').value = url;
     $('embedCode').value =
       '<iframe src="' + url + '"\n' +
@@ -222,6 +252,7 @@
   $('shareClose').addEventListener('click', () => $('shareModal').classList.add('hidden'));
   $('shareModal').addEventListener('click', (e) => { if (e.target.id === 'shareModal') $('shareModal').classList.add('hidden'); });
   $('embedKiosk').addEventListener('change', refreshShare);
+  $('embedPilot').addEventListener('change', refreshShare);
   document.querySelectorAll('.copy').forEach((b) => b.addEventListener('click', () => {
     const el = $(b.dataset.copy);
     el.select();
@@ -262,6 +293,9 @@
 
     const kiosk = q.get('kiosk') === '1' || q.get('ui') === 'off';
     const src = q.get('source'); // mic | file | display
+    // Autopilot (opt-in): an ever-evolving show that runs itself, no clicks.
+    if (q.get('autopilot') === '1') setAutopilot(true);
+
     if (kiosk) {
       document.body.classList.add('kiosk');
       $('welcome').classList.add('hidden');
@@ -298,6 +332,11 @@
       audio.treble = 0.12 + 0.08 * Math.sin(t * 0.9 + 2.1);
       audio.level = 0.22;
       audio.beat *= 0.92;
+    }
+
+    if (autopilot.on) {
+      autopilot.timer += dt;
+      if (autopilot.timer >= autopilot.interval) { autopilot.timer = 0; autopilotStep(); }
     }
 
     director.update(dt, freshBeat, audio);

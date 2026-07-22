@@ -7,7 +7,7 @@
 (function (global) {
   'use strict';
 
-  const SCENES = ['Tunnel', 'Nebula', 'Kaleidoscope', 'Synthwave', 'Star Warp'];
+  const SCENES = ['Tunnel', 'Nebula', 'Kaleidoscope', 'Synthwave', 'Star Warp', 'Aurora'];
 
   const VERT = `
     attribute vec2 aPos;
@@ -159,12 +159,31 @@
     return col * (0.75 + uLevel*1.1);
   }
 
+  // ---- Scene 5: aurora (flowing domain-warped ribbons) ----
+  vec3 sceneAurora(vec2 uv){
+    vec2 p = uv * 1.25;
+    float t = uTime * 0.12;
+    // layered domain warp -> liquid, flowing motion
+    vec2 q = vec2(fbm(p + t), fbm(p + vec2(5.2, 1.3) - t));
+    vec2 r = vec2(fbm(p + 2.0*q + vec2(1.7, 9.2) + 0.15*t + uBass*0.6),
+                  fbm(p + 2.0*q + vec2(8.3, 2.8) - 0.12*t));
+    float f = fbm(p + 3.0*r);
+    float band = 0.5 + 0.5*sin((r.x*3.0 + f*4.0 + uTime*0.5) * PI);
+    float hue = uHue + f*0.25 + r.y*0.15 + uMid*0.1;
+    float bright = pow(band, 1.6) * (0.5 + uLevel*1.5);
+    vec3 col = hsv2rgb(vec3(fract(hue), uSat*0.9, bright));
+    col += hsv2rgb(vec3(fract(hue+0.12), uSat, 1.0)) * pow(band, 6.0) * uTreble * 0.7;
+    col *= 0.65 + 0.35*smoothstep(-1.0, 1.0, sin(uv.x*3.0 + r.x*4.0)); // curtain sway
+    return col;
+  }
+
   vec3 renderScene(int idx, vec2 uv){
     if(idx==0) return sceneTunnel(uv);
     if(idx==1) return sceneNebula(uv);
     if(idx==2) return sceneKaleido(uv);
     if(idx==3) return sceneGrid(uv);
-    return sceneStars(uv);
+    if(idx==4) return sceneStars(uv);
+    return sceneAurora(uv);
   }
 
   void main(){

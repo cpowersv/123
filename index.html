@@ -75,6 +75,7 @@
     <div class="dock-group">
       <button class="btn" id="btnPlay" title="Play / Pause (Space)">⏸</button>
       <button class="btn" id="btnAuto" title="Auto-Direct (A)">🎬 Auto</button>
+      <button class="btn" id="btnPilot" title="Autopilot — auto-cycles the whole look (P)">🛸 Autopilot</button>
       <button class="btn" id="btnStyle" title="Genres &amp; cinematic moods (G)">🎚 Style</button>
     </div>
 
@@ -123,6 +124,10 @@
       <label class="modal-check">
         <input type="checkbox" id="embedKiosk" checked />
         Hide controls (clean background — great for a hero section)
+      </label>
+      <label class="modal-check">
+        <input type="checkbox" id="embedPilot" />
+        Auto-cycle looks (self-running show — no clicks needed)
       </label>
       <p class="modal-note">Tip: works in Webflow, Squarespace, WordPress, and any site builder's <em>Embed / Custom&nbsp;HTML</em> block. For microphone reactivity the iframe needs <code>allow="microphone"</code> (already included).</p>
     </div>

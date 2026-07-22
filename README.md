@@ -14,9 +14,11 @@ required). Open `index.html` and go.
 - **Reacts to real audio in real time.** A Web Audio FFT splits the sound into
   **bass / mid / treble / level** and detects **beats**, which drive everything
   on screen.
-- **Five GPU shader scenes:** Wormhole Tunnel · Nebula · Kaleidoscope ·
-  Synthwave Horizon · Star Warp — each with cinematic post (glow/bloom,
-  vignette, film grain, beat-flash).
+- **Six GPU shader scenes:** Wormhole Tunnel · Nebula · Kaleidoscope ·
+  Synthwave Horizon · Star Warp · Aurora (flowing liquid ribbons) — each
+  with cinematic post (glow/bloom, vignette, film grain, beat-flash).
+- **Autopilot:** a self-running show that auto-cycles the whole look
+  (genre + mood) over time — hands-free, no clicks.
 - **Cinematic Director.** In Auto mode it kicks the camera on beats and *cuts*
   between scenes in time with the music, like a VJ editing live.
 - **Cinematic commands.** Type a vibe and it re-directs the whole look:
@@ -82,6 +84,7 @@ Paste it into any site builder's **Embed / Custom HTML** block. With
 | `hue` `int` `sat` | `0`–`100` | Color / intensity / saturation |
 | `cut` `kick` | number | Cut speed (s) / beat response |
 | `kiosk` | `1` | Hide all controls (hero mode) |
+| `autopilot` | `1` | Self-running show (auto-cycles looks) |
 | `source` | `mic` `file` `display` | Preselect the audio source |
 
 ## ⌨️ Keyboard shortcuts
@@ -92,6 +95,7 @@ Paste it into any site builder's **Embed / Custom HTML** block. With
 | `1`–`5` | Jump to a scene |
 | `A` | Toggle Auto-Direct |
 | `G` | Genre / cinematic-mood picker |
+| `P` | Autopilot (self-running show) |
 | `←` / `→` | Shift color |
 | `/` | Focus the command bar |
 | `F` | Fullscreen (TV mode) |
