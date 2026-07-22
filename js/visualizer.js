@@ -32,6 +32,7 @@
   uniform float uSceneNext;   // next scene index (during transition)
   uniform float uTrans;       // 0..1 crossfade
   uniform float uWarp;        // camera kick 0..1
+  uniform float uLook;        // film/aesthetic grade index
 
   #define PI 3.14159265
 
@@ -258,6 +259,42 @@
     return sceneCells(uv);
   }
 
+  // ---- Film / aesthetic grades applied over any scene ----
+  vec3 applyLook(vec3 col, vec2 uv){
+    int L = int(uLook + 0.5);
+    float lum = dot(col, vec3(0.299, 0.587, 0.114));
+    if(L == 1){                      // Noir — black & white photography
+      float c = clamp((lum - 0.5)*1.6 + 0.5, 0.0, 1.0);
+      col = vec3(c);
+      col *= 1.0 - dot(uv, uv)*0.7;                 // heavy vignette
+    } else if(L == 2){               // Vintage — faded sepia
+      vec3 sep = vec3(dot(col, vec3(0.393,0.769,0.189)),
+                      dot(col, vec3(0.349,0.686,0.168)),
+                      dot(col, vec3(0.272,0.534,0.131)));
+      col = mix(col, sep, 0.8);
+      col = col*0.82 + 0.07;                        // lifted, milky blacks
+      col *= 1.0 - dot(uv, uv)*0.4;
+    } else if(L == 3){               // VHS — retro tape
+      col *= 0.88 + 0.12*sin(gl_FragCoord.y*2.0);   // scanlines
+      float s = 0.012 + 0.01*sin(uTime*3.0);
+      float wob = sin(uv.y*22.0 + uTime*5.0);
+      col.r += s*2.0*wob; col.b -= s*2.0*wob;       // chroma bleed
+      float nz = hash(vec2(floor(gl_FragCoord.y*0.5), floor(uTime*30.0)));
+      col += (nz - 0.5)*0.09;                       // tape noise
+    } else if(L == 4){               // Pop art — saturated & posterized
+      col = mix(vec3(lum), col, 1.7);
+      col = floor(col*5.0 + 0.5)/5.0;
+      col = clamp((col - 0.5)*1.3 + 0.5, 0.0, 1.0);
+    } else if(L == 5){               // Cinematic — teal/orange + letterbox
+      vec3 teal = vec3(0.10, 0.50, 0.55);
+      vec3 orange = vec3(1.0, 0.66, 0.32);
+      vec3 grade = mix(teal, orange, smoothstep(0.15, 0.85, lum));
+      col = mix(col, col*grade*1.5, 0.6);
+      if(abs(uv.y) > 0.43) col = vec3(0.0);         // widescreen bars
+    }
+    return col;
+  }
+
   void main(){
     vec2 uv = (gl_FragCoord.xy - 0.5*uRes) / uRes.y;
 
@@ -287,6 +324,7 @@
     float g = hash(gl_FragCoord.xy + fract(uTime)*vec2(13.0,7.0));
     col += (g - 0.5) * 0.035;
 
+    col = applyLook(col, uv);
     col = pow(clamp(col, 0.0, 1.0), vec3(0.85)); // gentle gamma / contrast
     gl_FragColor = vec4(col, 1.0);
   }
@@ -334,7 +372,7 @@
       gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 
       const names = ['uRes','uTime','uBass','uMid','uTreble','uLevel','uBeat',
-                     'uHue','uSat','uIntensity','uScene','uSceneNext','uTrans','uWarp'];
+                     'uHue','uSat','uIntensity','uScene','uSceneNext','uTrans','uWarp','uLook'];
       this.u = {};
       names.forEach(n => this.u[n] = gl.getUniformLocation(prog, n));
     }
@@ -367,6 +405,7 @@
       gl.uniform1f(u.uSceneNext, p.sceneNext);
       gl.uniform1f(u.uTrans, p.transition);
       gl.uniform1f(u.uWarp, audio.beat * kick);
+      gl.uniform1f(u.uLook, p.look == null ? 0 : p.look);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
   }

@@ -13,7 +13,7 @@
     constructor() {
       // Live params consumed by the visualizer each frame.
       this.p = {
-        hue: 0.6, saturation: 0.9, intensity: 0.8, beatKick: 1.0,
+        hue: 0.6, saturation: 0.9, intensity: 0.8, beatKick: 1.0, look: 0,
         scene: 0, sceneNext: 0, transition: 0,
       };
       // Targets the params ease toward (set by commands / sliders).
@@ -35,6 +35,7 @@
       if (params.intensity !== undefined) this.target.intensity = params.intensity;
       if (params.cutSpeed !== undefined) this.cutSpeed = params.cutSpeed;
       if (params.beatKick !== undefined) this.p.beatKick = params.beatKick;
+      if (params.look !== undefined) this.p.look = params.look;
       if (params.transDur !== undefined) this._transDur = params.transDur;
       if (params.autoDirect !== undefined) this.autoDirect = params.autoDirect;
       if (params.scene !== undefined) this.cutTo(params.scene);
@@ -53,6 +54,7 @@
         int: +this.target.intensity.toFixed(3),
         cut: +this.cutSpeed.toFixed(1),
         kick: +this.p.beatKick.toFixed(2),
+        look: this.p.look,
         auto: this.autoDirect ? 1 : 0,
       };
     }
@@ -64,6 +66,7 @@
       if (c.int != null) { this.target.intensity = c.int; this.p.intensity = c.int; }
       if (c.cut != null) this.cutSpeed = c.cut;
       if (c.kick != null) this.p.beatKick = c.kick;
+      if (c.look != null) this.p.look = c.look;
       if (c.auto != null) this.autoDirect = !!c.auto;
       if (c.scene != null) { this.p.scene = c.scene; this.p.sceneNext = c.scene; this.p.transition = 0; }
     }

@@ -42,7 +42,7 @@
     { name: 'Ambient',     keys: ['ambient', 'drone'],
       p: { scene: SCENE.NEBULA, hue: 0.6, saturation: 0.5, intensity: 0.35, cutSpeed: 22, beatKick: 0.25, transDur: 2.2 } },
     { name: 'Pop',         keys: ['pop', 'dance pop'],
-      p: { scene: SCENE.KALEIDO, hue: 0.9, saturation: 0.9, intensity: 0.8, cutSpeed: 6, beatKick: 1.1, transDur: 1.0 } },
+      p: { scene: SCENE.KALEIDO, hue: 0.9, saturation: 0.9, intensity: 0.8, cutSpeed: 6, beatKick: 1.1, transDur: 1.0, look: 4 } },
     { name: 'Rock',        keys: ['rock', 'punk', 'indie', 'alt'],
       p: { scene: SCENE.GRID, hue: 0.03, saturation: 0.85, intensity: 0.85, cutSpeed: 6, beatKick: 1.2, transDur: 0.8 } },
     { name: 'Metal',       keys: ['metal', 'hardcore', 'thrash', 'djent'],
@@ -50,7 +50,7 @@
     { name: 'Jazz / Soul', keys: ['jazz', 'blues', 'soul', 'funk soul'],
       p: { scene: SCENE.NEBULA, hue: 0.07, saturation: 0.7, intensity: 0.5, cutSpeed: 12, beatKick: 0.7, transDur: 1.6 } },
     { name: 'Classical',   keys: ['classical', 'orchestral', 'orchestra', 'score', 'soundtrack', 'piano'],
-      p: { scene: SCENE.STARS, hue: 0.62, saturation: 0.7, intensity: 0.7, cutSpeed: 12, beatKick: 0.7, transDur: 2.0 } },
+      p: { scene: SCENE.STARS, hue: 0.62, saturation: 0.7, intensity: 0.7, cutSpeed: 12, beatKick: 0.7, transDur: 2.0, look: 5 } },
     { name: 'Funk / Disco', keys: ['funk', 'disco', 'groove', 'nu-disco'],
       p: { scene: SCENE.KALEIDO, hue: 0.12, saturation: 1.0, intensity: 0.85, cutSpeed: 5, beatKick: 1.2, transDur: 0.9 } },
     { name: 'Reggae / Dub', keys: ['reggae', 'dub', 'dancehall', 'ska'],
@@ -59,6 +59,16 @@
       p: { scene: SCENE.GRID, hue: 0.86, saturation: 0.95, intensity: 0.8, cutSpeed: 8, beatKick: 1.0, transDur: 1.0 } },
     { name: 'R&B',         keys: ['r&b', 'rnb', 'r and b'],
       p: { scene: SCENE.NEBULA, hue: 0.83, saturation: 0.75, intensity: 0.6, cutSpeed: 10, beatKick: 0.9, transDur: 1.4 } },
+  ];
+
+  /* ---- Looks: a film/aesthetic grade over any scene ---- */
+  const LOOKS = [
+    { name: 'Standard',  keys: ['standard', 'clean', 'default'], p: { look: 0 } },
+    { name: 'Noir B&W',  keys: ['noir', 'black and white', 'photography', 'photo', 'monochrome', 'grayscale', 'greyscale'], p: { look: 1 } },
+    { name: 'Vintage',   keys: ['vintage', 'sepia', 'faded', 'old film'], p: { look: 2 } },
+    { name: 'VHS Retro', keys: ['vhs', 'glitch', 'tape', 'analog'], p: { look: 3 } },
+    { name: 'Pop Art',   keys: ['pop art', 'comic', 'posterize', 'technicolor'], p: { look: 4 } },
+    { name: 'Cinematic', keys: ['cinematic look', 'cinema', 'film look', 'letterbox', 'teal orange', 'widescreen'], p: { look: 5 } },
   ];
 
   /* ---- Cinematic desires: overlay the "director's intent" ---- */
@@ -75,8 +85,8 @@
       p: { intensity: 1.0, saturation: 1.0, cutSpeed: 3, beatKick: 1.6, transDur: 0.5 } },
     { name: 'Meditative',  keys: ['meditative', 'calm', 'serene', 'peaceful', 'zen', 'spa', 'relax', 'chill'],
       p: { intensity: 0.35, saturation: 0.7, cutSpeed: 20, beatKick: 0.25, transDur: 2.2 } },
-    { name: 'Nostalgic',   keys: ['nostalgic', 'retro', 'vintage', '80s', 'eighties'],
-      p: { scene: SCENE.GRID, hue: 0.86, intensity: 0.7, cutSpeed: 9, beatKick: 0.9, transDur: 1.1 } },
+    { name: 'Nostalgic',   keys: ['nostalgic', 'retro', '80s', 'eighties'],
+      p: { scene: SCENE.GRID, hue: 0.86, intensity: 0.7, cutSpeed: 9, beatKick: 0.9, transDur: 1.1, look: 3 } },
     { name: 'Romantic',    keys: ['romantic', 'love', 'intimate', 'tender'],
       p: { hue: 0.95, saturation: 0.7, intensity: 0.55, cutSpeed: 12, beatKick: 0.7, transDur: 1.6 } },
   ];
@@ -104,7 +114,7 @@
   function sortByKeyLen(list) {
     return list.slice().sort((a, b) => Math.max(...b.keys.map(k => k.length)) - Math.max(...a.keys.map(k => k.length)));
   }
-  const ALL = sortByKeyLen([...GENRES, ...CINEMATIC, ...MOODS]);
+  const ALL = sortByKeyLen([...GENRES, ...CINEMATIC, ...LOOKS, ...MOODS]);
 
   function parseCommand(text) {
     // Normalize, then match longest phrases first, consuming each match so a
@@ -139,5 +149,5 @@
   const findGenre = (q) => findIn(GENRES, q);
   const findMood = (q) => findIn(CINEMATIC, q);
 
-  global.Commands = { parseCommand, SCENE, GENRES, CINEMATIC, findGenre, findMood, slug };
+  global.Commands = { parseCommand, SCENE, GENRES, CINEMATIC, LOOKS, findGenre, findMood, slug };
 })(window);

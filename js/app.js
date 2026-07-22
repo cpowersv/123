@@ -66,7 +66,8 @@
         if (entry.p.hue !== undefined) $('hue').value = Math.round(entry.p.hue * 100);
         [...wrap.children].forEach((x) => x.classList.remove('on'));
         c.classList.add('on');
-        toast((group === 'genre' ? '🎵 ' : '🎬 ') + entry.name);
+        const prefix = { genre: '🎵 ', mood: '🎬 ', look: '🎞 ' }[group] || '';
+        toast(prefix + entry.name);
         kickIdle();
       });
       wrap.appendChild(c);
@@ -74,6 +75,7 @@
   }
   buildChips('genreChips', Commands.GENRES, 'genre');
   buildChips('moodChips', Commands.CINEMATIC, 'mood');
+  buildChips('lookChips', Commands.LOOKS, 'look');
 
   /* ---------------- Autopilot (self-running show) ---------------- */
   const autopilot = { on: false, timer: 0, interval: 20 };
@@ -93,6 +95,9 @@
       const m = Commands.CINEMATIC[Math.floor(Math.random() * Commands.CINEMATIC.length)];
       director.applyCommand(m.p);
     }
+    // occasionally restyle with a film look for extra variety
+    director.p.look = Math.random() < 0.4
+      ? Math.floor(Math.random() * Commands.LOOKS.length) : 0;
     $('intensity').value = Math.round(director.target.intensity * 100);
     $('hue').value = Math.round(director.target.hue * 100);
     if (!document.body.classList.contains('kiosk')) toast('🛸 ' + g.name);
@@ -143,6 +148,20 @@
     $('dock').classList.remove('hidden');
     updatePlayBtn();
     kickIdle();
+
+    // If a live mic/tab source hears nothing after a few seconds, say why.
+    if (type === 'mic' || type === 'display') {
+      let peak = 0;
+      const t = setInterval(() => { peak = Math.max(peak, audio.level); }, 200);
+      setTimeout(() => {
+        clearInterval(t);
+        if (peak < 0.01) {
+          toast(type === 'mic'
+            ? 'Not hearing anything — allow mic access and play sound near it (needs an https page).'
+            : 'No audio detected — re-share and tick "Share tab audio".');
+        }
+      }, 3500);
+    }
   }
 
   document.querySelectorAll('.src-btn').forEach((b) =>
@@ -233,6 +252,7 @@
     p.set('sat', Math.round(s.sat * 100));
     p.set('cut', s.cut);
     p.set('kick', s.kick);
+    p.set('look', s.look);
     p.set('auto', s.auto);
     if (kioskFlag) p.set('kiosk', '1');
     if (pilotFlag) p.set('autopilot', '1');
@@ -284,6 +304,7 @@
     if (num('sat') != null) cfg.sat = clamp01(num('sat') / 100);
     if (num('cut') != null) cfg.cut = num('cut');
     if (num('kick') != null) cfg.kick = num('kick');
+    if (num('look') != null) cfg.look = num('look');
     if (q.has('auto')) cfg.auto = q.get('auto') !== '0';
     director.applyConfig(cfg);
 
