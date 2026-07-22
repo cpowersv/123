@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#05050a" />
+  <title>Audivue — Real-Time Music Visuals</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%9B%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- The visual stage -->
+  <canvas id="stage"></canvas>
+
+  <!-- Beat / info readout (top-left, subtle) -->
+  <div id="hud" class="hud">
+    <div class="hud-title">AUDIVUE</div>
+    <div class="hud-scene" id="hudScene">Tunnel</div>
+    <div class="meters">
+      <span class="meter"><i>BASS</i><b id="mBass"></b></span>
+      <span class="meter"><i>MID</i><b id="mMid"></b></span>
+      <span class="meter"><i>HIGH</i><b id="mTreble"></b></span>
+    </div>
+  </div>
+
+  <!-- Start / welcome overlay (audio needs a user gesture) -->
+  <div id="welcome" class="welcome">
+    <div class="welcome-inner">
+      <h1 class="brand">AUDIVUE</h1>
+      <p class="tag">Turn on your TV. Play music. Watch it come alive.</p>
+      <p class="sub">Pick where the sound comes from to begin:</p>
+      <div class="source-grid">
+        <button class="src-btn" data-source="mic">
+          <span class="src-ico">🎙️</span>
+          <span class="src-name">Microphone</span>
+          <span class="src-desc">Point it at your speakers — great for a room.</span>
+        </button>
+        <button class="src-btn" data-source="file">
+          <span class="src-ico">🎵</span>
+          <span class="src-name">Music file</span>
+          <span class="src-desc">Play an audio file directly.</span>
+        </button>
+        <button class="src-btn" data-source="display">
+          <span class="src-ico">🖥️</span>
+          <span class="src-name">Tab / system audio</span>
+          <span class="src-desc">Share a browser tab or screen with sound.</span>
+        </button>
+      </div>
+      <p class="hint">Tip: type a mood after starting — like <em>"midnight neon city"</em> or <em>"calm ocean sunrise"</em>.</p>
+    </div>
+  </div>
+
+  <!-- Command bar -->
+  <form id="commandBar" class="command-bar hidden" autocomplete="off">
+    <span class="cmd-label">DIRECT</span>
+    <input id="commandInput" class="cmd-input" type="text"
+           placeholder='Set the vibe — e.g. "aggressive neon rave" or "chill deep space"' />
+    <button type="submit" class="cmd-go">Go</button>
+  </form>
+
+  <!-- Control dock -->
+  <div id="dock" class="dock hidden">
+    <div class="dock-group">
+      <button class="btn" id="btnPlay" title="Play / Pause (Space)">⏸</button>
+      <button class="btn" id="btnAuto" title="Auto-Direct (A)">🎬 Auto</button>
+    </div>
+
+    <div class="dock-group scenes" id="sceneDots" title="Scenes (1–5)"></div>
+
+    <div class="dock-group">
+      <label class="slider-wrap" title="Intensity">
+        <span>⚡</span>
+        <input type="range" id="intensity" min="0" max="100" value="80" />
+      </label>
+      <label class="slider-wrap" title="Color">
+        <span>🎨</span>
+        <input type="range" id="hue" min="0" max="100" value="60" />
+      </label>
+    </div>
+
+    <div class="dock-group">
+      <button class="btn" id="btnSource" title="Change audio source">🔊 Source</button>
+      <button class="btn" id="btnFullscreen" title="Fullscreen (F)">⛶ TV</button>
+    </div>
+  </div>
+
+  <input type="file" id="fileInput" accept="audio/*" hidden />
+  <div id="toast" class="toast"></div>
+
+  <script src="js/audio.js"></script>
+  <script src="js/commands.js"></script>
+  <script src="js/visualizer.js"></script>
+  <script src="js/director.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
