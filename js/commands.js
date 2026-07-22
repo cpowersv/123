@@ -129,5 +129,15 @@
     return { params: out, matched };
   }
 
-  global.Commands = { parseCommand, SCENE, GENRES, CINEMATIC };
+  // Slug helper + lookups so a URL like ?genre=drum-and-bass works.
+  const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  function findIn(list, q) {
+    if (!q) return null;
+    const s = slug(q);
+    return list.find((e) => slug(e.name) === s || e.keys.some((k) => slug(k) === s)) || null;
+  }
+  const findGenre = (q) => findIn(GENRES, q);
+  const findMood = (q) => findIn(CINEMATIC, q);
+
+  global.Commands = { parseCommand, SCENE, GENRES, CINEMATIC, findGenre, findMood, slug };
 })(window);

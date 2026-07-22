@@ -190,6 +190,91 @@
   ['mousemove', 'touchstart', 'click'].forEach((ev) =>
     document.addEventListener(ev, kickIdle, { passive: true }));
 
+  /* ---------------- Share / embed ---------------- */
+  const clamp01 = (v) => Math.max(0, Math.min(1, v));
+
+  function buildShareUrl(kioskFlag) {
+    const s = director.snapshot();
+    const base = location.origin && location.origin !== 'null'
+      ? location.origin + location.pathname : location.href.split('?')[0];
+    const p = new URLSearchParams();
+    p.set('scene', s.scene);
+    p.set('hue', Math.round(s.hue * 100));
+    p.set('int', Math.round(s.int * 100));
+    p.set('sat', Math.round(s.sat * 100));
+    p.set('cut', s.cut);
+    p.set('kick', s.kick);
+    p.set('auto', s.auto);
+    if (kioskFlag) p.set('kiosk', '1');
+    return base + '?' + p.toString();
+  }
+
+  function refreshShare() {
+    const url = buildShareUrl($('embedKiosk').checked);
+    $('shareLink').value = url;
+    $('embedCode').value =
+      '<iframe src="' + url + '"\n' +
+      '  width="100%" height="480" style="border:0;border-radius:12px"\n' +
+      '  allow="microphone; fullscreen; autoplay"></iframe>';
+  }
+
+  $('btnShare').addEventListener('click', () => { refreshShare(); $('shareModal').classList.remove('hidden'); });
+  $('shareClose').addEventListener('click', () => $('shareModal').classList.add('hidden'));
+  $('shareModal').addEventListener('click', (e) => { if (e.target.id === 'shareModal') $('shareModal').classList.add('hidden'); });
+  $('embedKiosk').addEventListener('change', refreshShare);
+  document.querySelectorAll('.copy').forEach((b) => b.addEventListener('click', () => {
+    const el = $(b.dataset.copy);
+    el.select();
+    const done = () => toast('Copied to clipboard');
+    if (navigator.clipboard) navigator.clipboard.writeText(el.value).then(done, () => { document.execCommand('copy'); done(); });
+    else { document.execCommand('copy'); done(); }
+  }));
+
+  /* ---------------- Config from URL (deep-link / embed) ---------------- */
+  function initFromUrl() {
+    const q = new URLSearchParams(location.search);
+    const num = (k) => (q.has(k) ? parseFloat(q.get(k)) : null);
+
+    const g = Commands.findGenre(q.get('genre'));
+    const m = Commands.findMood(q.get('mood'));
+    if (g) director.applyCommand(g.p);
+    if (m) director.applyCommand(m.p);
+
+    const cfg = {};
+    if (q.has('scene')) {
+      const s = q.get('scene');
+      const idx = isNaN(+s)
+        ? SCENE_NAMES.findIndex((n) => Commands.slug(n) === Commands.slug(s))
+        : parseInt(s, 10);
+      if (idx >= 0) cfg.scene = idx;
+    }
+    if (num('hue') != null) cfg.hue = clamp01(num('hue') / 100);
+    if (num('int') != null) cfg.int = clamp01(num('int') / 100);
+    if (num('sat') != null) cfg.sat = clamp01(num('sat') / 100);
+    if (num('cut') != null) cfg.cut = num('cut');
+    if (num('kick') != null) cfg.kick = num('kick');
+    if (q.has('auto')) cfg.auto = q.get('auto') !== '0';
+    director.applyConfig(cfg);
+
+    $('intensity').value = Math.round(director.target.intensity * 100);
+    $('hue').value = Math.round(director.target.hue * 100);
+    $('btnAuto').classList.toggle('on', director.autoDirect);
+
+    const kiosk = q.get('kiosk') === '1' || q.get('ui') === 'off';
+    const src = q.get('source'); // mic | file | display
+    if (kiosk) {
+      document.body.classList.add('kiosk');
+      $('welcome').classList.add('hidden');
+      if (src) {
+        const k = $('kioskStart');
+        k.classList.remove('hidden');
+        k.addEventListener('click', async () => { k.classList.add('hidden'); await begin(src); });
+      }
+    } else if (src) {
+      begin(src);
+    }
+  }
+
   /* ---------------- Meters ---------------- */
   function setMeters() {
     $('mBass').style.setProperty('--v', Math.min(100, audio.bass * 140) + '%');
@@ -204,7 +289,16 @@
     const t = (now - t0) / 1000;
 
     let freshBeat = false;
-    if (started) freshBeat = audio.update() || false;
+    if (started) {
+      freshBeat = audio.update() || false;
+    } else {
+      // Gentle synthetic motion so the welcome/kiosk background breathes.
+      audio.bass = 0.20 + 0.12 * Math.sin(t * 0.7);
+      audio.mid = 0.16 + 0.10 * Math.sin(t * 0.5 + 1.3);
+      audio.treble = 0.12 + 0.08 * Math.sin(t * 0.9 + 2.1);
+      audio.level = 0.22;
+      audio.beat *= 0.92;
+    }
 
     director.update(dt, freshBeat, audio);
     viz.render(t, audio, director.p);
@@ -212,8 +306,7 @@
     if (started) { setMeters(); syncDots(); }
     requestAnimationFrame(frame);
   }
-  requestAnimationFrame(frame);
 
-  // Small idle demo motion before the user starts (so it isn't black).
-  audio.bass = audio.mid = audio.treble = audio.level = 0.12;
+  initFromUrl();
+  requestAnimationFrame(frame);
 })();

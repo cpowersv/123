@@ -47,6 +47,43 @@ python3 -m http.server 8000
 
 Pick an audio source on the welcome screen, then type a mood and hit **Go**.
 
+## 🎚️ Genres & cinematic moods
+
+Open **🎚 Style** (or press `G`) to pick from **19 genres** (Techno, DnB, Lo-fi,
+Metal, Classical, Trap, Synthwave…) and **8 cinematic moods** (Epic Build, Moody
+Noir, Euphoric, Dreamy, Meditative…). Each preset changes the scene, palette,
+energy, cut cadence, how hard the camera hits each beat, and whether cuts are
+hard slams or dreamy dissolves. You can also just type them into the command bar
+(`"epic neon techno"`, `"dreamy lofi sunset"`).
+
+## 🔗 Embedding on your site (Webflow / Squarespace / WordPress / any builder)
+
+Dial in a look, hit **🔗 Embed**, and copy the ready-made snippet. The current
+scene, colors and energy are baked into the URL, so it renders exactly as you
+set it:
+
+```html
+<iframe src="https://YOUR-DOMAIN/?scene=3&hue=86&int=80&kiosk=1"
+  width="100%" height="480" style="border:0;border-radius:12px"
+  allow="microphone; fullscreen; autoplay"></iframe>
+```
+
+Paste it into any site builder's **Embed / Custom HTML** block. With
+`kiosk=1` the controls hide and it becomes a clean, animated hero background
+(no audio needed). Add `source=mic` for a "tap for live audio" button.
+
+**URL parameters**
+
+| Param | Values | Purpose |
+| --- | --- | --- |
+| `genre` | `techno`, `drum-and-bass`, `lofi`… | Apply a genre preset |
+| `mood` | `epic`, `moody`, `dreamy`… | Apply a cinematic mood |
+| `scene` | `0`–`4` or name | Force a scene |
+| `hue` `int` `sat` | `0`–`100` | Color / intensity / saturation |
+| `cut` `kick` | number | Cut speed (s) / beat response |
+| `kiosk` | `1` | Hide all controls (hero mode) |
+| `source` | `mic` `file` `display` | Preselect the audio source |
+
 ## ⌨️ Keyboard shortcuts
 
 | Key | Action |
@@ -54,6 +91,7 @@ Pick an audio source on the welcome screen, then type a mood and hit **Go**.
 | `Space` | Play / pause |
 | `1`–`5` | Jump to a scene |
 | `A` | Toggle Auto-Direct |
+| `G` | Genre / cinematic-mood picker |
 | `←` / `→` | Shift color |
 | `/` | Focus the command bar |
 | `F` | Fullscreen (TV mode) |

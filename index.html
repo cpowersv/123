@@ -92,8 +92,39 @@
     </div>
 
     <div class="dock-group">
+      <button class="btn" id="btnShare" title="Share &amp; embed this look">🔗 Embed</button>
       <button class="btn" id="btnSource" title="Change audio source">🔊 Source</button>
       <button class="btn" id="btnFullscreen" title="Fullscreen (F)">⛶ TV</button>
+    </div>
+  </div>
+
+  <!-- Kiosk / embed start button (audio needs one user gesture) -->
+  <button id="kioskStart" class="kiosk-start hidden">▶ Tap for live audio</button>
+
+  <!-- Share / embed modal -->
+  <div id="shareModal" class="modal hidden">
+    <div class="modal-card">
+      <button class="modal-close" id="shareClose" title="Close">✕</button>
+      <h2>Share &amp; embed this look</h2>
+      <p class="modal-sub">Your current scene, colors and energy are baked into the link below.</p>
+
+      <label class="field-label">Shareable link</label>
+      <div class="field-row">
+        <input id="shareLink" class="field-input" readonly />
+        <button class="btn copy" data-copy="shareLink">Copy</button>
+      </div>
+
+      <label class="field-label">Embed on your site (paste into an HTML / embed block)</label>
+      <div class="field-row">
+        <textarea id="embedCode" class="field-input area" readonly rows="3"></textarea>
+        <button class="btn copy" data-copy="embedCode">Copy</button>
+      </div>
+
+      <label class="modal-check">
+        <input type="checkbox" id="embedKiosk" checked />
+        Hide controls (clean background — great for a hero section)
+      </label>
+      <p class="modal-note">Tip: works in Webflow, Squarespace, WordPress, and any site builder's <em>Embed / Custom&nbsp;HTML</em> block. For microphone reactivity the iframe needs <code>allow="microphone"</code> (already included).</p>
     </div>
   </div>
 

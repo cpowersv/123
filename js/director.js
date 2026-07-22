@@ -44,6 +44,30 @@
     setIntensity(i) { this.target.intensity = i; }
     setSaturation(s) { this.target.saturation = s; }
 
+    /* Snapshot the current look for share/embed links. */
+    snapshot() {
+      return {
+        scene: Math.round(this.p.transition > 0 ? this.p.sceneNext : this.p.scene),
+        hue: +this.target.hue.toFixed(3),
+        sat: +this.target.saturation.toFixed(3),
+        int: +this.target.intensity.toFixed(3),
+        cut: +this.cutSpeed.toFixed(1),
+        kick: +this.p.beatKick.toFixed(2),
+        auto: this.autoDirect ? 1 : 0,
+      };
+    }
+
+    /* Apply a look immediately (no easing) — used for URL config. */
+    applyConfig(c) {
+      if (c.hue != null) { this.target.hue = c.hue; this.p.hue = c.hue; }
+      if (c.sat != null) { this.target.saturation = c.sat; this.p.saturation = c.sat; }
+      if (c.int != null) { this.target.intensity = c.int; this.p.intensity = c.int; }
+      if (c.cut != null) this.cutSpeed = c.cut;
+      if (c.kick != null) this.p.beatKick = c.kick;
+      if (c.auto != null) this.autoDirect = !!c.auto;
+      if (c.scene != null) { this.p.scene = c.scene; this.p.sceneNext = c.scene; this.p.transition = 0; }
+    }
+
     toggleAuto() { this.autoDirect = !this.autoDirect; return this.autoDirect; }
 
     /* Start a crossfade to a specific scene. */
