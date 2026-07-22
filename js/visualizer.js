@@ -267,14 +267,15 @@
       gl.uniform1f(u.uMid, audio.mid);
       gl.uniform1f(u.uTreble, audio.treble);
       gl.uniform1f(u.uLevel, audio.level);
-      gl.uniform1f(u.uBeat, audio.beat);
+      const kick = p.beatKick == null ? 1 : p.beatKick;
+      gl.uniform1f(u.uBeat, audio.beat * (0.5 + 0.5 * Math.min(1, kick)));
       gl.uniform1f(u.uHue, p.hue);
       gl.uniform1f(u.uSat, p.saturation);
       gl.uniform1f(u.uIntensity, p.intensity);
       gl.uniform1f(u.uScene, p.scene);
       gl.uniform1f(u.uSceneNext, p.sceneNext);
       gl.uniform1f(u.uTrans, p.transition);
-      gl.uniform1f(u.uWarp, audio.beat);
+      gl.uniform1f(u.uWarp, audio.beat * kick);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
   }

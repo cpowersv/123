@@ -51,6 +51,38 @@
     $('hudScene').textContent = SCENE_NAMES[cur];
   }
 
+  /* ---------------- Genre / mood picker ---------------- */
+  function buildChips(wrapId, list, group) {
+    const wrap = $(wrapId);
+    list.forEach((entry) => {
+      const c = document.createElement('button');
+      c.className = 'chip';
+      c.type = 'button';
+      c.textContent = entry.name;
+      c.addEventListener('click', () => {
+        director.applyCommand(entry.p);
+        // reflect on sliders + highlight the active chip within its group
+        if (entry.p.intensity !== undefined) $('intensity').value = Math.round(entry.p.intensity * 100);
+        if (entry.p.hue !== undefined) $('hue').value = Math.round(entry.p.hue * 100);
+        [...wrap.children].forEach((x) => x.classList.remove('on'));
+        c.classList.add('on');
+        toast((group === 'genre' ? '🎵 ' : '🎬 ') + entry.name);
+        kickIdle();
+      });
+      wrap.appendChild(c);
+    });
+  }
+  buildChips('genreChips', Commands.GENRES, 'genre');
+  buildChips('moodChips', Commands.CINEMATIC, 'mood');
+
+  function toggleStyle(force) {
+    const panel = $('stylePanel');
+    const show = force !== undefined ? force : panel.classList.contains('hidden');
+    panel.classList.toggle('hidden', !show);
+    $('btnStyle').classList.toggle('on', show);
+  }
+  $('btnStyle').addEventListener('click', () => toggleStyle());
+
   /* ---------------- Sources ---------------- */
   async function startSource(type) {
     try {
@@ -137,6 +169,7 @@
       case ' ': e.preventDefault(); audio.togglePlay(); updatePlayBtn(); break;
       case 'f': toggleFullscreen(); break;
       case 'a': $('btnAuto').click(); break;
+      case 'g': toggleStyle(); break;
       case 'h': document.body.classList.toggle('idle'); break;
       case 'arrowleft': director.setHue((director.target.hue + 0.95) % 1); $('hue').value = Math.round(director.target.hue*100); break;
       case 'arrowright': director.setHue((director.target.hue + 0.05) % 1); $('hue').value = Math.round(director.target.hue*100); break;

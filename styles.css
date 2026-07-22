@@ -109,6 +109,27 @@ body.idle .dock,body.idle .command-bar,body.idle .hud{opacity:0;pointer-events:n
 .slider-wrap input[type=range]::-moz-range-thumb{width:15px;height:15px;border:none;border-radius:50%;
   background:#fff;cursor:pointer;box-shadow:0 0 10px rgba(123,92,255,.9);}
 
+/* ---------- Style panel (genres / moods) ---------- */
+.style-panel{
+  position:fixed;bottom:86px;left:50%;transform:translateX(-50%);z-index:29;
+  width:min(760px,94vw);padding:16px 18px;display:flex;flex-direction:column;gap:14px;
+  background:var(--glass);border:1px solid var(--glass-brd);border-radius:18px;
+  backdrop-filter:blur(16px);box-shadow:0 12px 40px rgba(0,0,0,.5);
+  transition:opacity .35s ease,transform .35s ease;
+}
+.style-panel.hidden{opacity:0;transform:translateX(-50%) translateY(12px);pointer-events:none;display:flex !important;}
+.sp-section{display:flex;flex-direction:column;gap:8px;}
+.sp-label{font-size:10px;font-weight:700;letter-spacing:.24em;color:var(--txt-dim);}
+.chips{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{background:rgba(255,255,255,.06);border:1px solid var(--glass-brd);color:var(--txt);
+  font-size:12.5px;font-weight:500;padding:7px 13px;border-radius:20px;cursor:pointer;
+  transition:background .15s,border-color .15s,transform .12s;white-space:nowrap;}
+.chip:hover{background:rgba(255,255,255,.14);transform:translateY(-2px);}
+.chip:active{transform:scale(.95);}
+.chip.on{background:linear-gradient(120deg,var(--accent),var(--accent2));border-color:transparent;color:#fff;
+  box-shadow:0 4px 16px rgba(123,92,255,.5);}
+body.idle .style-panel{opacity:0;pointer-events:none;}
+
 /* ---------- Toast ---------- */
 .toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(20px);z-index:40;
   background:rgba(20,20,32,.9);border:1px solid var(--glass-brd);color:var(--txt);

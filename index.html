@@ -46,7 +46,7 @@
           <span class="src-desc">Share a browser tab or screen with sound.</span>
         </button>
       </div>
-      <p class="hint">Tip: type a mood after starting — like <em>"midnight neon city"</em> or <em>"calm ocean sunrise"</em>.</p>
+      <p class="hint">After starting, pick a <em>genre</em> &amp; <em>cinematic mood</em>, or just type one — like <em>"epic neon techno"</em> or <em>"dreamy lofi sunset"</em>.</p>
     </div>
   </div>
 
@@ -58,11 +58,24 @@
     <button type="submit" class="cmd-go">Go</button>
   </form>
 
+  <!-- Genre / cinematic-mood picker -->
+  <div id="stylePanel" class="style-panel hidden">
+    <div class="sp-section">
+      <span class="sp-label">Genre</span>
+      <div class="chips" id="genreChips"></div>
+    </div>
+    <div class="sp-section">
+      <span class="sp-label">Cinematic mood</span>
+      <div class="chips" id="moodChips"></div>
+    </div>
+  </div>
+
   <!-- Control dock -->
   <div id="dock" class="dock hidden">
     <div class="dock-group">
       <button class="btn" id="btnPlay" title="Play / Pause (Space)">⏸</button>
       <button class="btn" id="btnAuto" title="Auto-Direct (A)">🎬 Auto</button>
+      <button class="btn" id="btnStyle" title="Genres &amp; cinematic moods (G)">🎚 Style</button>
     </div>
 
     <div class="dock-group scenes" id="sceneDots" title="Scenes (1–5)"></div>
