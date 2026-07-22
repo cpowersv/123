@@ -7,7 +7,8 @@
 (function (global) {
   'use strict';
 
-  const SCENES = ['Tunnel', 'Nebula', 'Kaleidoscope', 'Synthwave', 'Star Warp', 'Aurora'];
+  const SCENES = ['Tunnel', 'Nebula', 'Kaleidoscope', 'Synthwave', 'Star Warp',
+                  'Aurora', 'Ridges', 'Chrome', 'Cells'];
 
   const VERT = `
     attribute vec2 aPos;
@@ -40,6 +41,7 @@
   }
   mat2 rot(float a){ float s=sin(a), c=cos(a); return mat2(c,-s,s,c); }
   float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453); }
+  vec2 hash2(vec2 p){ return fract(sin(vec2(dot(p,vec2(127.1,311.7)), dot(p,vec2(269.5,183.3))))*43758.5453); }
   float noise(vec2 p){
     vec2 i=floor(p), f=fract(p);
     vec2 u=f*f*(3.0-2.0*f);
@@ -177,13 +179,83 @@
     return col;
   }
 
+  // ---- Scene 6: audio terrain (scrolling ridges) ----
+  vec3 sceneRidges(vec2 uv){
+    vec3 sky = mix(hsv2rgb(vec3(fract(uHue+0.5), uSat*0.7, 0.28)),
+                   hsv2rgb(vec3(fract(uHue), uSat, 0.05)), clamp(uv.y*0.6+0.5, 0.0, 1.0));
+    vec3 col = sky;
+    for(int i=0;i<6;i++){
+      float fi = float(i);
+      float depth = fi / 5.0;                       // 0 = far, 1 = near
+      float scroll = uTime*(0.15 + depth*0.5);
+      float h = fbm(vec2(uv.x*(1.5+depth*3.0) + scroll, fi*10.0))*0.45;
+      h += (uBass*0.18 + uMid*0.1)*(0.3 + depth);
+      float line = (0.4 - depth*0.85) + h;          // near ridges sit lower
+      float d = uv.y - line;
+      float fill = smoothstep(0.012, -0.012, d);
+      float shade = 0.12 + 0.55*depth;
+      vec3 rc = hsv2rgb(vec3(fract(uHue + depth*0.12), uSat, shade));
+      float edge = smoothstep(0.035, 0.0, abs(d))*(0.5 + uLevel*1.1);
+      col = mix(col, rc, fill);
+      col += hsv2rgb(vec3(fract(uHue + depth*0.12 + 0.06), uSat, 1.0))*edge*0.6;
+    }
+    col += vec3(1.0)*uBeat*0.05;
+    return col;
+  }
+
+  // ---- Scene 7: liquid metal (flowing height-field with moving highlights) ----
+  float chromeH(vec2 p, vec2 w){ return fbm(p*1.5 + 2.0*w); }
+  vec3 sceneChrome(vec2 uv){
+    vec2 p = uv*1.6;
+    float t = uTime*0.15;
+    vec2 w = vec2(fbm(p + t), fbm(p - t + 3.1)) + uBass*0.3;
+    float h = chromeH(p, w);
+    // surface normal from the height gradient -> lets light "roll" across it
+    float e = 0.015;
+    float hx = chromeH(p + vec2(e, 0.0), w) - chromeH(p - vec2(e, 0.0), w);
+    float hy = chromeH(p + vec2(0.0, e), w) - chromeH(p - vec2(0.0, e), w);
+    vec3 n = normalize(vec3(-hx, -hy, 0.12));
+    vec3 lightDir = normalize(vec3(sin(uTime*0.3), cos(uTime*0.3), 0.85));
+    float diff = clamp(dot(n, lightDir), 0.0, 1.0);
+    float spec = pow(diff, 18.0);
+    float hue = uHue + (0.5 + 0.5*sin(h*7.0 + uTime))*0.08 + h*0.1;
+    vec3 col = hsv2rgb(vec3(fract(hue), uSat*0.55, 0.14 + 0.55*diff));
+    col += vec3(1.0)*spec*(0.7 + uTreble);          // rolling chrome highlight
+    return col * (0.7 + uLevel*0.7);
+  }
+
+  // ---- Scene 8: pulsing cells (voronoi) ----
+  vec3 sceneCells(vec2 uv){
+    vec2 p = uv*2.5 + vec2(uTime*0.1, uTime*0.07);
+    vec2 g = floor(p), f = fract(p);
+    float d1 = 8.0; vec2 cellId = vec2(0.0);
+    for(int j=-1;j<=1;j++){
+      for(int i=-1;i<=1;i++){
+        vec2 o = vec2(float(i), float(j));
+        vec2 pos = o + 0.5 + 0.5*sin(uTime*0.6 + 6.2831*hash2(g+o));
+        float d = length(pos - f);
+        if(d < d1){ d1 = d; cellId = g+o; }
+      }
+    }
+    float rnd = hash(cellId);
+    float pulse = 0.5 + 0.5*sin(uTime*2.0 + rnd*6.2831 + uBass*4.0);
+    float edge = smoothstep(0.0, 0.06, d1);
+    float bright = (0.2 + 0.8*pulse)*(0.4 + uLevel*1.1);
+    vec3 col = hsv2rgb(vec3(fract(uHue + rnd*0.3), uSat, bright))*edge;
+    col += vec3(1.0)*pow(1.0-edge, 2.0)*uTreble*0.35;   // bright cell borders on highs
+    return col;
+  }
+
   vec3 renderScene(int idx, vec2 uv){
     if(idx==0) return sceneTunnel(uv);
     if(idx==1) return sceneNebula(uv);
     if(idx==2) return sceneKaleido(uv);
     if(idx==3) return sceneGrid(uv);
     if(idx==4) return sceneStars(uv);
-    return sceneAurora(uv);
+    if(idx==5) return sceneAurora(uv);
+    if(idx==6) return sceneRidges(uv);
+    if(idx==7) return sceneChrome(uv);
+    return sceneCells(uv);
   }
 
   void main(){
