@@ -8,7 +8,8 @@
   'use strict';
 
   const SCENES = ['Tunnel', 'Nebula', 'Kaleidoscope', 'Synthwave', 'Star Warp',
-                  'Aurora', 'Ridges', 'Chrome', 'Cells', 'Plasma', 'Fractal', 'Spectrum'];
+                  'Aurora', 'Ridges', 'Chrome', 'Cells', 'Plasma', 'Fractal', 'Spectrum',
+                  'Waveform', 'Hex', 'Rings', 'Fireflies'];
 
   const VERT = `
     attribute vec2 aPos;
@@ -34,10 +35,12 @@
   uniform float uWarp;        // camera kick 0..1
   uniform float uLook;        // film/aesthetic grade index
   uniform sampler2D uFFT;     // 1D frequency spectrum (0..1 across bins)
+  uniform sampler2D uWave;    // 1D time-domain waveform (0..1, centered at 0.5)
 
   #define PI 3.14159265
 
   float fftAt(float x){ return texture2D(uFFT, vec2(clamp(x, 0.0, 1.0), 0.5)).r; }
+  float waveAt(float x){ return texture2D(uWave, vec2(clamp(x, 0.0, 1.0), 0.5)).r; }
 
   vec3 hsv2rgb(vec3 c){
     vec3 p = abs(fract(c.xxx + vec3(0.0,2.0/3.0,1.0/3.0))*6.0 - 3.0);
@@ -302,6 +305,70 @@
     return col;
   }
 
+  // ---- Scene 12: waveform oscilloscope ----
+  vec3 sceneWave(vec2 uv){
+    float x = uv.x*0.5 + 0.5;
+    float amp = (waveAt(x) - 0.5) * 1.7;
+    float line = smoothstep(0.02, 0.0, abs(uv.y - amp));
+    float glow = smoothstep(0.18, 0.0, abs(uv.y - amp));
+    float hue = uHue + x*0.2 + abs(amp)*0.35;
+    vec3 col = hsv2rgb(vec3(fract(hue), uSat, 1.0))*line;
+    col += hsv2rgb(vec3(fract(hue), uSat, 1.0))*glow*0.4*(0.5 + uLevel);
+    float mirror = smoothstep(0.02, 0.0, abs(uv.y + amp));   // faint reflection
+    col += hsv2rgb(vec3(fract(hue+0.5), uSat, 1.0))*mirror*0.3;
+    return col + vec3(0.01, 0.01, 0.03);
+  }
+
+  // ---- Scene 13: honeycomb / hex pulse ----
+  vec3 sceneHex(vec2 uv){
+    vec2 p = uv*5.0 + vec2(0.0, uTime*0.3);
+    vec2 s = vec2(1.0, 1.7320508), h = s*0.5;
+    vec2 a = mod(p, s) - h, b = mod(p - h, s) - h;
+    vec2 gv = dot(a, a) < dot(b, b) ? a : b;
+    vec2 id = p - gv;
+    float r = length(gv);
+    float rnd = hash(id);
+    float pulse = 0.5 + 0.5*sin(uTime*3.0 + rnd*6.2831 + uBass*5.0);
+    float cell = smoothstep(0.5, 0.34, r);
+    float edge = smoothstep(0.5, 0.46, r)*(0.5 + uLevel*1.1);
+    float hue = uHue + rnd*0.3 + pulse*0.05;
+    vec3 col = hsv2rgb(vec3(fract(hue), uSat, 0.12 + 0.6*pulse))*cell;
+    col += hsv2rgb(vec3(fract(hue+0.1), uSat, 1.0))*edge;
+    return col;
+  }
+
+  // ---- Scene 14: radial rings / beat shockwaves ----
+  vec3 sceneRings(vec2 uv){
+    float r = length(uv);
+    float rings = sin(r*22.0 - uTime*3.0 - uBass*10.0);
+    float ring = smoothstep(0.6, 1.0, rings);
+    float hue = uHue + r*0.3 + uMid*0.1;
+    vec3 col = hsv2rgb(vec3(fract(hue), uSat, ring*(0.5 + uLevel*1.2)));
+    float shock = smoothstep(0.06, 0.0, abs(r - uBeat*1.3))*uBeat;
+    col += hsv2rgb(vec3(fract(uHue+0.1), uSat, 1.0))*shock;   // expanding beat wave
+    col *= smoothstep(1.6, 0.15, r) + 0.08;
+    return col;
+  }
+
+  // ---- Scene 15: fireflies (floating glow particles) ----
+  vec3 sceneFireflies(vec2 uv){
+    vec3 col = vec3(0.0);
+    for(int i=0;i<40;i++){
+      float fi = float(i);
+      float sp = 0.2 + hash(vec2(fi, 1.0))*0.4;
+      vec2 pos = vec2(sin(uTime*sp + fi*1.7 + hash(vec2(fi,2.0))*6.2831),
+                      cos(uTime*sp*0.9 + fi*2.3 + hash(vec2(fi,3.0))*6.2831)) * 0.8;
+      pos.x *= 1.6;
+      float d = length(uv - pos);
+      float tw = 0.5 + 0.5*sin(uTime*3.0 + fi + uBass*3.0);
+      float b = smoothstep(0.055, 0.0, d)*(0.4 + 0.6*tw)*(0.5 + uLevel);
+      vec3 sc = hsv2rgb(vec3(fract(uHue + hash(vec2(fi,4.0))*0.2), uSat*0.7, 1.0));
+      col += sc*b + sc*smoothstep(0.16, 0.0, d)*0.12*uTreble;
+    }
+    col += hsv2rgb(vec3(fract(uHue+0.6), uSat*0.5, 0.05));
+    return col;
+  }
+
   vec3 renderScene(int idx, vec2 uv){
     if(idx==0) return sceneTunnel(uv);
     if(idx==1) return sceneNebula(uv);
@@ -314,7 +381,11 @@
     if(idx==8) return sceneCells(uv);
     if(idx==9) return scenePlasma(uv);
     if(idx==10) return sceneFractal(uv);
-    return sceneSpectrum(uv);
+    if(idx==11) return sceneSpectrum(uv);
+    if(idx==12) return sceneWave(uv);
+    if(idx==13) return sceneHex(uv);
+    if(idx==14) return sceneRings(uv);
+    return sceneFireflies(uv);
   }
 
   // ---- Film / aesthetic grades applied over any scene ----
@@ -430,19 +501,24 @@
       gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 
       const names = ['uRes','uTime','uBass','uMid','uTreble','uLevel','uBeat',
-                     'uHue','uSat','uIntensity','uScene','uSceneNext','uTrans','uWarp','uLook','uFFT'];
+                     'uHue','uSat','uIntensity','uScene','uSceneNext','uTrans','uWarp','uLook','uFFT','uWave'];
       this.u = {};
       names.forEach(n => this.u[n] = gl.getUniformLocation(prog, n));
 
-      // 1D spectrum texture (updated per frame from the analyser).
-      this.fftTex = gl.createTexture();
-      gl.bindTexture(gl.TEXTURE_2D, this.fftTex);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      // 1D data textures (updated per frame from the analyser).
       gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, 4, 1, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 0]));
+      const makeDataTex = () => {
+        const tex = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, 4, 1, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 0]));
+        return tex;
+      };
+      this.fftTex = makeDataTex();   // frequency spectrum
+      this.waveTex = makeDataTex();  // time-domain waveform
     }
 
     resize() {
@@ -474,13 +550,19 @@
       gl.uniform1f(u.uTrans, p.transition);
       gl.uniform1f(u.uWarp, audio.beat * kick);
       gl.uniform1f(u.uLook, p.look == null ? 0 : p.look);
-      // Upload the current spectrum for FFT-driven scenes.
+      // Upload the current spectrum + waveform for data-driven scenes.
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, this.fftTex);
       if (audio.freq && audio.freq.length) {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, audio.freq.length, 1, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, audio.freq);
       }
       gl.uniform1i(u.uFFT, 0);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, this.waveTex);
+      if (audio.wave && audio.wave.length) {
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, audio.wave.length, 1, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, audio.wave);
+      }
+      gl.uniform1i(u.uWave, 1);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
   }

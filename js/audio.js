@@ -38,6 +38,7 @@
         this.analyser.fftSize = 2048;
         this.analyser.smoothingTimeConstant = 0.75;
         this.freq = new Uint8Array(this.analyser.frequencyBinCount);
+        this.wave = new Uint8Array(this.analyser.fftSize); // time-domain (oscilloscope)
       }
       if (this.ctx.state === 'suspended') this.ctx.resume();
     }
@@ -130,6 +131,7 @@
     update() {
       if (!this.analyser) return;
       this.analyser.getByteFrequencyData(this.freq);
+      this.analyser.getByteTimeDomainData(this.wave);
 
       const bassRaw   = this._avg(20, 250);
       const midRaw    = this._avg(250, 2000);
