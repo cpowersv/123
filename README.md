@@ -24,6 +24,10 @@ required). Open `index.html` and go.
   an aesthetic grade layered over any scene.
 - **Autopilot:** a self-running show that auto-cycles the whole look
   (genre + mood) over time — hands-free, no clicks.
+- **AirPlay mode:** stream the visuals to an Apple TV. In Safari it opens
+  the native AirPlay picker (canvas captured to a video); everywhere else
+  it presents a clean, screen-mirror-ready fullscreen view and keeps the
+  display awake (Wake Lock).
 - **Cinematic Director.** In Auto mode it kicks the camera on beats and *cuts*
   between scenes in time with the music, like a VJ editing live.
 - **Cinematic commands.** Type a vibe and it re-directs the whole look:

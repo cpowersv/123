@@ -206,6 +206,76 @@
     }
   }
 
+  /* ---------------- AirPlay / casting ---------------- */
+  let airVideo = null, wakeLock = null, airOn = false;
+
+  function ensureAirVideo() {
+    if (airVideo) return airVideo;
+    const v = $('airplayVideo');
+    try {
+      if (canvas.captureStream) v.srcObject = canvas.captureStream(30); // mirror the live visuals
+    } catch (e) {}
+    v.addEventListener('webkitcurrentplaybacktargetiswirelesschanged', () => {
+      const on = !!v.webkitCurrentPlaybackTargetIsWireless;
+      $('btnAirplay').classList.toggle('on', on);
+      toast(on ? '📺 AirPlay connected' : 'AirPlay disconnected');
+    });
+    const pl = v.play && v.play();
+    if (pl && pl.catch) pl.catch(() => {});
+    airVideo = v;
+    return v;
+  }
+
+  async function requestWakeLock() {
+    try { if (navigator.wakeLock && !wakeLock) wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
+  }
+  function releaseWakeLock() { try { if (wakeLock) wakeLock.release(); } catch (e) {} wakeLock = null; }
+  document.addEventListener('visibilitychange', () => {
+    if (airOn && document.visibilityState === 'visible') requestWakeLock();
+  });
+
+  function enterAirPresentation() {
+    airOn = true;
+    document.body.classList.add('kiosk');       // clean visuals (what gets cast/mirrored)
+    $('airExit').classList.remove('hidden');
+    requestWakeLock();
+    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+  }
+  function exitAir() {
+    airOn = false;
+    document.body.classList.remove('kiosk');
+    $('airExit').classList.add('hidden');
+    releaseWakeLock();
+    if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+  }
+  $('airExit').addEventListener('click', exitAir);
+  document.addEventListener('fullscreenchange', () => { if (airOn && !document.fullscreenElement) exitAir(); });
+
+  function openAirHelp() { $('airplayModal').classList.remove('hidden'); }
+
+  function startAirplay() {
+    const v = ensureAirVideo();
+    const canPicker = typeof v.webkitShowPlaybackTargetPicker === 'function';
+    const canRemote = v.remote && typeof v.remote.prompt === 'function';
+    if (canPicker) {
+      enterAirPresentation();
+      try { v.webkitShowPlaybackTargetPicker(); } catch (e) { openAirHelp(); }
+    } else if (canRemote) {
+      enterAirPresentation();
+      v.remote.prompt().catch(() => { exitAir(); openAirHelp(); });
+    } else {
+      // No programmatic route (e.g. non-Safari) — guide to Screen Mirroring.
+      requestWakeLock();
+      openAirHelp();
+    }
+  }
+
+  $('btnAirplay').addEventListener('click', startAirplay);
+  $('airClose').addEventListener('click', () => $('airplayModal').classList.add('hidden'));
+  $('airplayModal').addEventListener('click', (e) => { if (e.target.id === 'airplayModal') $('airplayModal').classList.add('hidden'); });
+
   /* ---------------- Keyboard ---------------- */
   document.addEventListener('keydown', (e) => {
     if (document.activeElement === $('commandInput')) {
@@ -218,6 +288,7 @@
       case 'a': $('btnAuto').click(); break;
       case 'g': toggleStyle(); break;
       case 'p': $('btnPilot').click(); break;
+      case 'escape': if (airOn) exitAir(); break;
       case 'h': document.body.classList.toggle('idle'); break;
       case 'arrowleft': director.setHue((director.target.hue + 0.95) % 1); $('hue').value = Math.round(director.target.hue*100); break;
       case 'arrowright': director.setHue((director.target.hue + 0.05) % 1); $('hue').value = Math.round(director.target.hue*100); break;

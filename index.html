@@ -97,9 +97,39 @@
     </div>
 
     <div class="dock-group">
+      <button class="btn" id="btnAirplay" title="AirPlay to Apple TV">📺 AirPlay</button>
       <button class="btn" id="btnShare" title="Share &amp; embed this look">🔗 Embed</button>
       <button class="btn" id="btnSource" title="Change audio source">🔊 Source</button>
       <button class="btn" id="btnFullscreen" title="Fullscreen (F)">⛶ TV</button>
+    </div>
+  </div>
+
+  <!-- Hidden video: mirrors the live canvas so Safari can AirPlay the visuals -->
+  <video id="airplayVideo" class="airplay-video" playsinline muted autoplay></video>
+
+  <!-- Exit chip shown while presenting -->
+  <button id="airExit" class="air-exit hidden">✕ Exit AirPlay</button>
+
+  <!-- AirPlay help / screen-mirroring modal -->
+  <div id="airplayModal" class="modal hidden">
+    <div class="modal-card">
+      <button class="modal-close" id="airClose" title="Close">✕</button>
+      <h2>📺 Put Audivue on your TV</h2>
+      <p class="modal-sub">Two ways to AirPlay to an Apple TV or AirPlay-2 TV:</p>
+
+      <label class="field-label">Option A — direct AirPlay (Safari)</label>
+      <p class="modal-note" style="margin-top:0">
+        Use the <strong>📺 AirPlay</strong> button in <strong>Safari</strong> on iPhone, iPad, or Mac.
+        If a picker appears, choose your Apple TV — only the visuals are sent, full-screen and clean.
+      </p>
+
+      <label class="field-label">Option B — Screen Mirroring (works everywhere)</label>
+      <ol class="air-steps">
+        <li><strong>iPhone / iPad:</strong> open <em>Control Center</em> → <em>Screen Mirroring</em> → pick your Apple TV.</li>
+        <li><strong>Mac:</strong> <em>Control Center</em> → <em>Screen Mirroring</em> → your Apple TV (or the menu-bar AirPlay icon).</li>
+        <li>Back in Audivue, press <strong>⛶ TV</strong> for fullscreen. The screen is kept awake automatically.</li>
+      </ol>
+      <p class="modal-note">Tip: Screen Mirroring also carries the music if it's playing on the same device. With direct AirPlay, keep the audio playing on your device.</p>
     </div>
   </div>
 
