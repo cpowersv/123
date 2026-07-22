@@ -8,7 +8,7 @@
   'use strict';
 
   const SCENES = ['Tunnel', 'Nebula', 'Kaleidoscope', 'Synthwave', 'Star Warp',
-                  'Aurora', 'Ridges', 'Chrome', 'Cells'];
+                  'Aurora', 'Ridges', 'Chrome', 'Cells', 'Plasma', 'Fractal', 'Spectrum'];
 
   const VERT = `
     attribute vec2 aPos;
@@ -33,8 +33,11 @@
   uniform float uTrans;       // 0..1 crossfade
   uniform float uWarp;        // camera kick 0..1
   uniform float uLook;        // film/aesthetic grade index
+  uniform sampler2D uFFT;     // 1D frequency spectrum (0..1 across bins)
 
   #define PI 3.14159265
+
+  float fftAt(float x){ return texture2D(uFFT, vec2(clamp(x, 0.0, 1.0), 0.5)).r; }
 
   vec3 hsv2rgb(vec3 c){
     vec3 p = abs(fract(c.xxx + vec3(0.0,2.0/3.0,1.0/3.0))*6.0 - 3.0);
@@ -247,6 +250,58 @@
     return col;
   }
 
+  // ---- Scene 9: plasma (classic flowing color field) ----
+  vec3 scenePlasma(vec2 uv){
+    float t = uTime*0.5;
+    vec2 p = uv*3.0;
+    float v = sin(p.x + t) + sin(p.y + t*1.3)
+            + sin((p.x + p.y)*0.7 + t) + sin(length(p)*1.5 - t*2.0 - uBass*3.0);
+    v += uMid*2.0*sin(p.x*2.0 - t);
+    float hue = uHue + v*0.08 + uTreble*0.05;
+    float bright = (0.5 + 0.5*sin(v*1.5)) * (0.55 + uLevel*0.95);
+    return hsv2rgb(vec3(fract(hue), uSat, bright));
+  }
+
+  // ---- Scene 10: animated Julia fractal ----
+  vec3 sceneFractal(vec2 uv){
+    vec2 z = uv*1.5;
+    z *= rot(uTime*0.04);
+    vec2 c = 0.7885*vec2(cos(uTime*0.18), sin(uTime*0.18*1.3)) * (0.92 + 0.08*uBass);
+    float it = 0.0;
+    for(int i=0;i<48;i++){
+      z = vec2(z.x*z.x - z.y*z.y, 2.0*z.x*z.y) + c;
+      if(dot(z, z) > 4.0) break;
+      it += 1.0;
+    }
+    float m = it/48.0;
+    float band = 0.5 + 0.5*sin(m*30.0 - uTime*2.0 - uBass*3.0);
+    float hue = uHue + m*0.5 + uMid*0.1;
+    float bright = (it >= 47.5) ? 0.0 : band*(0.5 + uLevel*1.1);
+    vec3 col = hsv2rgb(vec3(fract(hue), uSat, bright));
+    col += vec3(1.0)*pow(band, 8.0)*uTreble*0.4;
+    return col;
+  }
+
+  // ---- Scene 11: spectrum analyzer (real FFT, mirrored bars) ----
+  vec3 sceneSpectrum(vec2 uv){
+    float cols = 72.0;
+    float x = uv.x*0.5 + 0.5;
+    float xi = floor(x*cols)/cols;
+    float fx = pow(xi, 1.7)*0.42;                 // emphasize low/mid, use lower bins
+    float amp = clamp(pow(fftAt(fx), 1.25)*1.25, 0.0, 1.0);
+    float barH = 0.04 + amp*0.44;
+    float d = abs(uv.y);
+    float gap = 1.0 - smoothstep(0.30, 0.46, abs(fract(x*cols) - 0.5));
+    float inside = step(d, barH)*gap;
+    float edge = smoothstep(0.02, 0.0, abs(d - barH))*gap;
+    float hue = uHue + xi*0.42 + amp*0.1;
+    vec3 col = hsv2rgb(vec3(fract(hue), uSat, 0.45 + 0.55*amp)) * inside;
+    col *= 0.55 + 0.45*(1.0 - d/(barH + 0.001));  // brighter toward center line
+    col += hsv2rgb(vec3(fract(hue + 0.05), uSat, 1.0))*edge*1.3;  // glowing cap
+    col += vec3(0.015, 0.015, 0.04);              // faint background
+    return col;
+  }
+
   vec3 renderScene(int idx, vec2 uv){
     if(idx==0) return sceneTunnel(uv);
     if(idx==1) return sceneNebula(uv);
@@ -256,7 +311,10 @@
     if(idx==5) return sceneAurora(uv);
     if(idx==6) return sceneRidges(uv);
     if(idx==7) return sceneChrome(uv);
-    return sceneCells(uv);
+    if(idx==8) return sceneCells(uv);
+    if(idx==9) return scenePlasma(uv);
+    if(idx==10) return sceneFractal(uv);
+    return sceneSpectrum(uv);
   }
 
   // ---- Film / aesthetic grades applied over any scene ----
@@ -372,9 +430,19 @@
       gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 
       const names = ['uRes','uTime','uBass','uMid','uTreble','uLevel','uBeat',
-                     'uHue','uSat','uIntensity','uScene','uSceneNext','uTrans','uWarp','uLook'];
+                     'uHue','uSat','uIntensity','uScene','uSceneNext','uTrans','uWarp','uLook','uFFT'];
       this.u = {};
       names.forEach(n => this.u[n] = gl.getUniformLocation(prog, n));
+
+      // 1D spectrum texture (updated per frame from the analyser).
+      this.fftTex = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, this.fftTex);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, 4, 1, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 0]));
     }
 
     resize() {
@@ -406,6 +474,13 @@
       gl.uniform1f(u.uTrans, p.transition);
       gl.uniform1f(u.uWarp, audio.beat * kick);
       gl.uniform1f(u.uLook, p.look == null ? 0 : p.look);
+      // Upload the current spectrum for FFT-driven scenes.
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, this.fftTex);
+      if (audio.freq && audio.freq.length) {
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, audio.freq.length, 1, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, audio.freq);
+      }
+      gl.uniform1i(u.uFFT, 0);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
   }

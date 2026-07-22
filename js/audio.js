@@ -38,13 +38,6 @@
         this.analyser.fftSize = 2048;
         this.analyser.smoothingTimeConstant = 0.75;
         this.freq = new Uint8Array(this.analyser.frequencyBinCount);
-        // Keep-alive sink: some browsers only process an AnalyserNode when it
-        // has a path to the destination. Route it through a muted gain so the
-        // mic/live graph actually runs — without any audible feedback.
-        this.keepAlive = this.ctx.createGain();
-        this.keepAlive.gain.value = 0;
-        this.analyser.connect(this.keepAlive);
-        this.keepAlive.connect(this.ctx.destination);
       }
       if (this.ctx.state === 'suspended') this.ctx.resume();
     }

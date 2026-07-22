@@ -14,10 +14,13 @@ required). Open `index.html` and go.
 - **Reacts to real audio in real time.** A Web Audio FFT splits the sound into
   **bass / mid / treble / level** and detects **beats**, which drive everything
   on screen.
-- **Nine GPU shader scenes:** Wormhole Tunnel · Nebula · Kaleidoscope ·
+- **Twelve GPU shader scenes:** Wormhole Tunnel · Nebula · Kaleidoscope ·
   Synthwave Horizon · Star Warp · Aurora (liquid ribbons) · Ridges (audio
-  terrain) · Chrome (liquid metal) · Cells (pulsing voronoi) — each with
+  terrain) · Chrome (liquid metal) · Cells (pulsing voronoi) · Plasma ·
+  Fractal (animated Julia) · Spectrum (real FFT analyzer bars) — each with
   cinematic post (glow/bloom, vignette, film grain, beat-flash).
+- **Film looks:** Noir B&W · Vintage · VHS Retro · Pop Art · Cinematic —
+  an aesthetic grade layered over any scene.
 - **Autopilot:** a self-running show that auto-cycles the whole look
   (genre + mood) over time — hands-free, no clicks.
 - **Cinematic Director.** In Auto mode it kicks the camera on beats and *cuts*

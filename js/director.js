@@ -7,7 +7,7 @@
 (function (global) {
   'use strict';
 
-  const SCENE_COUNT = 9;
+  const SCENE_COUNT = 12;
 
   class Director {
     constructor() {
