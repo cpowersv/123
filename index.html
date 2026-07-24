@@ -16,6 +16,7 @@
     --line-2:  rgba(255,255,255,0.05);
     --glow:    rgba(255,194,75,0.28);
     --card-sh: 0 30px 80px -30px rgba(0,0,0,0.7);
+    --grad:    linear-gradient(135deg, var(--amber), var(--amber-2));
 
     --font-display: 'Helvetica Neue', 'Arial Black', Arial, sans-serif;
     --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
@@ -86,7 +87,7 @@
   .brand { display: flex; align-items: center; gap: 11px; font-family: var(--font-display); font-weight: 800; letter-spacing: -0.02em; font-size: 21px; }
   .mark {
     width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center;
-    background: linear-gradient(135deg, var(--amber), var(--amber-2));
+    background: var(--grad);
     box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 6px 20px -6px var(--glow);
   }
   .mark svg { display: block; }
@@ -129,7 +130,7 @@
     cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 10px;
     transition: transform .12s ease, box-shadow .2s ease, background .2s ease;
   }
-  .btn-primary { background: linear-gradient(135deg, var(--amber), var(--amber-2)); color: #241704; box-shadow: 0 14px 34px -12px var(--glow); }
+  .btn-primary { background: var(--grad); color: #241704; box-shadow: 0 14px 34px -12px var(--glow); }
   .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 20px 44px -12px var(--glow); }
   .btn-ghost { background: var(--bg-2); border-color: var(--line); color: var(--text); }
   .btn-ghost:hover { border-color: var(--amber); }
@@ -155,10 +156,38 @@
   .np-track { font-family: var(--font-display); font-weight: 800; font-size: 1.12rem; letter-spacing: -0.01em; }
   .np-artist { color: var(--muted); font-size: 13.5px; }
   .np-live { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); display: inline-flex; align-items: center; gap: 6px; margin-top: 3px; }
-  .np-live .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); animation: pulse 1.6s ease-in-out infinite; }
+  .np-live .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); animation: pulse 0.5s ease-in-out infinite; }
   @keyframes pulse { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 var(--glow); } 50% { opacity: .55; box-shadow: 0 0 0 6px transparent; } }
 
-  canvas.wave { display: block; width: 100%; height: 84px; margin: 18px 0 8px; }
+  /* --- scene visualizer --- */
+  .np {
+    --wave-a: var(--amber);
+    --wave-b: var(--violet);
+    --scene-wash: radial-gradient(120% 90% at 50% 120%, var(--glow), transparent 70%);
+  }
+  .np[data-scene="galaxy"] {
+    --wave-a: #8db4ff; --wave-b: #c68bff;
+    --scene-wash: radial-gradient(90% 120% at 20% 130%, rgba(120,90,255,0.35), transparent 65%),
+                  radial-gradient(80% 120% at 85% 120%, rgba(80,160,255,0.28), transparent 60%);
+  }
+  .np[data-scene="ocean"] {
+    --wave-a: #38e0d4; --wave-b: #3a86d8;
+    --scene-wash: radial-gradient(120% 130% at 50% 130%, rgba(56,200,210,0.30), transparent 62%),
+                  linear-gradient(180deg, transparent, rgba(30,90,140,0.18));
+  }
+
+  .scene-row { display: flex; gap: 7px; margin: 16px 0 0; }
+  .scene-chip {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg);
+    color: var(--muted); cursor: pointer; transition: border-color .15s ease, color .15s ease;
+  }
+  .scene-chip:hover { color: var(--text); }
+  .scene-chip.on { border-color: var(--wave-a); color: var(--text); box-shadow: inset 0 0 0 1px var(--wave-a); }
+
+  .np-stage { position: relative; margin: 12px 0 8px; border-radius: 14px; overflow: hidden; }
+  .np-stage::before { content: ""; position: absolute; inset: 0; background: var(--scene-wash); transition: background .5s ease; }
+  canvas.wave { display: block; position: relative; width: 100%; height: 96px; }
 
   .np-times { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 
@@ -175,8 +204,7 @@
     transition: border-color .15s ease, background .15s ease, transform .1s ease;
   }
   .chip:hover { border-color: var(--amber); }
-  .chip.on { border-color: var(--amber); background: var(--glow); color: var(--text); }
-  .chip.on { box-shadow: inset 0 0 0 1px var(--amber); }
+  .chip.on { border-color: var(--amber); background: var(--glow); color: var(--text); box-shadow: inset 0 0 0 1px var(--amber); }
 
   .tip-btn {
     position: relative; width: 100%; justify-content: center; font-size: 16px; padding: 15px;
@@ -237,7 +265,7 @@
     border-radius: 999px; padding: 8px 8px 8px 20px; margin-bottom: 26px; max-width: 100%;
   }
   .link-pill .url { font-family: var(--font-mono); font-size: 15px; color: var(--text); }
-  .copy-btn { background: linear-gradient(135deg, var(--amber), var(--amber-2)); color: #241704; border: none; font-weight: 700; padding: 9px 18px; border-radius: 999px; cursor: pointer; font-family: var(--font-body); font-size: 14px; }
+  .copy-btn { background: var(--grad); color: #241704; border: none; font-weight: 700; padding: 9px 18px; border-radius: 999px; cursor: pointer; font-family: var(--font-body); font-size: 14px; }
   .copy-btn:hover { filter: brightness(1.05); }
 
   .share-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
@@ -304,7 +332,7 @@
     </div>
 
     <!-- interactive now-playing / tip demo -->
-    <div class="np" id="npCard">
+    <div class="np" id="npCard" data-scene="studio">
       <div class="np-head">
         <div class="cover" aria-hidden="true"></div>
         <div class="np-meta">
@@ -314,7 +342,15 @@
         </div>
       </div>
 
-      <canvas class="wave" id="wave" aria-hidden="true"></canvas>
+      <div class="scene-row" id="scenes" role="group" aria-label="Choose a visualizer scene">
+        <button class="scene-chip on" data-scene="studio">Studio</button>
+        <button class="scene-chip" data-scene="galaxy">Galaxy</button>
+        <button class="scene-chip" data-scene="ocean">Ocean</button>
+      </div>
+
+      <div class="np-stage">
+        <canvas class="wave" id="wave" aria-hidden="true"></canvas>
+      </div>
       <div class="np-times"><span id="tElapsed">1:24</span><span>3:57</span></div>
 
       <div class="tip-block">
@@ -483,50 +519,105 @@
     }, 45);
   }
 
-  /* ---- waveform canvas ---- */
+  /* ---- waveform + scene visualizer ---- */
   var cv = document.getElementById('wave');
   var ctx = cv.getContext('2d');
+  var npCard = document.getElementById('npCard');
   var dpr = Math.min(window.devicePixelRatio || 1, 2);
-  var W, H, bars = 46;
-  function css(v){ return getComputedStyle(root).getPropertyValue(v).trim(); }
+  var W, H, bars = 46, scene = 'studio';
+  var BPM = 120, beatSec = 60 / BPM, startT = performance.now();
+
+  function cardCss(v) { return getComputedStyle(npCard).getPropertyValue(v).trim(); }
+  function waveColors() { return [cardCss('--wave-a') || '#FFC24B', cardCss('--wave-b') || '#9B7DFF']; }
   function size() {
     W = cv.clientWidth; H = cv.clientHeight;
     cv.width = W * dpr; cv.height = H * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (reduce) drawStatic();
   }
+
+  var seeds = [], stars = [];
+  for (var i = 0; i < bars; i++) seeds.push(Math.random() * 6.28);
+  for (var s = 0; s < 42; s++) stars.push({ x: Math.random(), y: Math.random(), r: Math.random() * 1.3 + 0.3, tw: Math.random() * 6.28, sp: 0.02 + Math.random() * 0.05 });
+
   size();
   window.addEventListener('resize', size);
 
-  var seeds = [];
-  for (var i = 0; i < bars; i++) seeds.push(Math.random() * 6.28);
+  function bar(i, mid, h, a, b) {
+    var bw = W / bars, x = i * bw + bw * 0.25, w = bw * 0.5, y = mid - h / 2;
+    var g = ctx.createLinearGradient(0, y, 0, y + h);
+    g.addColorStop(0, a); g.addColorStop(1, b);
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x, y, w, h, Math.min(w / 2, 3));
+    else ctx.rect(x, y, w, h);
+    ctx.fill();
+  }
 
-  var t = 0;
-  function draw() {
+  function drawStars(tt) {
+    for (var i = 0; i < stars.length; i++) {
+      var st = stars[i];
+      var x = ((st.x + tt * st.sp * 0.12) % 1) * W, y = st.y * H;
+      ctx.globalAlpha = 0.3 + 0.5 * (Math.sin(tt * 2 + st.tw) * 0.5 + 0.5);
+      ctx.fillStyle = i % 3 === 0 ? '#c68bff' : '#ffffff';
+      ctx.beginPath(); ctx.arc(x, y, st.r, 0, 6.283); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawOcean(tt, a, b) {
+    ctx.globalAlpha = 0.22; ctx.lineWidth = 1.4;
+    for (var L = 0; L < 3; L++) {
+      ctx.beginPath();
+      for (var x = 0; x <= W; x += 6) {
+        var y = H * (0.32 + L * 0.22) + Math.sin(x * 0.03 + tt * 1.5 + L) * (6 + L * 3);
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = L % 2 ? a : b; ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function draw(now) {
+    now = now || performance.now();
+    var tt = (now - startT) / 1000;
+    var phase = (tt / beatSec) % 1;
+    var env = Math.pow(1 - phase, 2.4);          // sharp hit on each beat, then decay
+    var cols = waveColors(), a = cols[0], b = cols[1];
     ctx.clearRect(0, 0, W, H);
-    var amber = css('--amber') || '#FFC24B';
-    var violet = css('--violet') || '#9B7DFF';
-    var bw = W / bars;
+    if (scene === 'galaxy') drawStars(tt);
+    else if (scene === 'ocean') drawOcean(tt, a, b);
     var mid = H / 2;
     for (var i = 0; i < bars; i++) {
-      var n = Math.sin(t + seeds[i]) * 0.5 + 0.5;
-      var n2 = Math.sin(t * 1.7 + seeds[i] * 1.3) * 0.5 + 0.5;
-      var h = (0.14 + (n * 0.6 + n2 * 0.26)) * (H * 0.9);
-      var x = i * bw + bw * 0.25;
-      var w = bw * 0.5;
-      var g = ctx.createLinearGradient(0, mid - h/2, 0, mid + h/2);
-      g.addColorStop(0, amber);
-      g.addColorStop(1, violet);
-      ctx.fillStyle = g;
-      var r = Math.min(w/2, 3);
-      var y = mid - h/2;
-      ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(x, y, w, h, r);
-      else ctx.rect(x, y, w, h);
-      ctx.fill();
+      var flow = Math.sin(tt * 3 + seeds[i]) * 0.5 + 0.5;
+      var center = Math.max(1 - Math.abs(i / (bars - 1) - 0.5) * 1.3, 0.12);
+      var h = (0.12 + flow * 0.16 + env * 0.62 * center) * (H * 0.94);
+      bar(i, mid, h, a, b);
     }
-    if (!reduce) { t += 0.055; requestAnimationFrame(draw); }
+    if (!reduce) requestAnimationFrame(draw);
   }
-  draw();
+
+  function drawStatic() {
+    var cols = waveColors(), mid = H / 2;
+    ctx.clearRect(0, 0, W, H);
+    for (var i = 0; i < bars; i++) {
+      var center = Math.max(1 - Math.abs(i / (bars - 1) - 0.5) * 1.3, 0.12);
+      bar(i, mid, (0.2 + center * 0.5) * (H * 0.9), cols[0], cols[1]);
+    }
+  }
+
+  if (reduce) drawStatic(); else requestAnimationFrame(draw);
+
+  /* scene switch */
+  var sceneRow = document.getElementById('scenes');
+  sceneRow.addEventListener('click', function (ev) {
+    var c = ev.target.closest('.scene-chip'); if (!c) return;
+    [].forEach.call(sceneRow.children, function (x) { x.classList.remove('on'); });
+    c.classList.add('on');
+    scene = c.getAttribute('data-scene');
+    npCard.setAttribute('data-scene', scene);
+    if (reduce) drawStatic();
+  });
 
   /* ---- elapsed timer ---- */
   if (!reduce) {
