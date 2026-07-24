@@ -355,14 +355,23 @@
   });
 
   /* ---------------- Idle hide ---------------- */
+  // Controls only auto-hide while actually presenting (fullscreen / AirPlay /
+  // kiosk) — never in normal windowed use, and never while typing a vibe.
   let idleTimer;
   function kickIdle() {
     document.body.classList.remove('idle');
     clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => { if (started) document.body.classList.add('idle'); }, 3500);
+    idleTimer = setTimeout(() => {
+      const presenting = document.fullscreenElement || airOn || document.body.classList.contains('kiosk');
+      if (started && presenting && document.activeElement !== $('commandInput')) {
+        document.body.classList.add('idle');
+      }
+    }, 5000);
   }
-  ['mousemove', 'touchstart', 'click'].forEach((ev) =>
+  ['mousemove', 'pointermove', 'pointerdown', 'touchstart', 'click', 'wheel', 'keydown'].forEach((ev) =>
     document.addEventListener(ev, kickIdle, { passive: true }));
+  // Typing or focusing the vibe box always keeps the UI awake.
+  ['input', 'focus', 'blur'].forEach((ev) => $('commandInput').addEventListener(ev, kickIdle));
 
   /* ---------------- Share / embed ---------------- */
   const clamp01 = (v) => Math.max(0, Math.min(1, v));

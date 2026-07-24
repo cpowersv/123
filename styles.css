@@ -18,9 +18,9 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);
 
 #stage{position:fixed;inset:0;width:100vw;height:100vh;display:block;}
 
-/* auto-hide cursor + UI in idle mode */
+/* auto-hide cursor + UI in idle mode (controls stay clickable so nothing locks) */
 body.idle{cursor:none;}
-body.idle .dock,body.idle .command-bar,body.idle .hud{opacity:0;pointer-events:none;}
+body.idle .dock,body.idle .command-bar,body.idle .hud{opacity:0;}
 
 .hidden{display:none !important;}
 
