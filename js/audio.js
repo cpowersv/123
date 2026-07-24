@@ -22,9 +22,11 @@
       this.treble = 0;
       this.level = 0;
 
-      // Beat detection.
+      // Beat detection + auto-gain.
       this.beat = 0;            // decaying pulse 0..1
-      this._bassHistory = [];
+      this._peak = 0.15;        // running level peak (auto-gain for quiet input)
+      this._prevBass = 0;
+      this._fluxHist = [];      // spectral-flux history for onset detection
       this._lastBeat = 0;
 
       this.playing = false;
@@ -36,7 +38,7 @@
         this.ctx = new AC();
         this.analyser = this.ctx.createAnalyser();
         this.analyser.fftSize = 2048;
-        this.analyser.smoothingTimeConstant = 0.75;
+        this.analyser.smoothingTimeConstant = 0.6; // sharper transients for beat detection
         this.freq = new Uint8Array(this.analyser.frequencyBinCount);
         this.wave = new Uint8Array(this.analyser.fftSize); // time-domain (oscilloscope)
         this.streamDest = this.ctx.createMediaStreamDestination(); // for AirPlay audio (file only)
@@ -150,31 +152,44 @@
       const trebleRaw = this._avg(2000, 9000);
       const levelRaw  = this._avg(30, 12000);
 
+      // Auto-gain: a slowly decaying peak lets quiet input (esp. mic) fill the
+      // full range, so both the visuals and beat detection stay responsive.
+      this._peak = Math.max(this._peak * 0.995, levelRaw, 0.04);
+      const gain = Math.min(6, 0.5 / this._peak);
+      const bg = Math.min(1, bassRaw * gain);
+      const mg = Math.min(1, midRaw * gain);
+      const tg = Math.min(1, trebleRaw * gain);
+      const lg = Math.min(1, levelRaw * gain);
+
       // Asymmetric smoothing: fast attack, slow release feels musical.
       const smooth = (cur, target, atk, rel) =>
         cur + (target - cur) * (target > cur ? atk : rel);
+      this.bass   = smooth(this.bass,   bg, 0.6,  0.14);
+      this.mid    = smooth(this.mid,    mg, 0.55, 0.16);
+      this.treble = smooth(this.treble, tg, 0.65, 0.22);
+      this.level  = smooth(this.level,  lg, 0.55, 0.12);
 
-      this.bass   = smooth(this.bass,   bassRaw,   0.55, 0.12);
-      this.mid    = smooth(this.mid,    midRaw,    0.5,  0.14);
-      this.treble = smooth(this.treble, trebleRaw, 0.6,  0.2);
-      this.level  = smooth(this.level,  levelRaw,  0.5,  0.1);
-
-      // ---- Beat detection on bass energy ----
-      const hist = this._bassHistory;
-      hist.push(bassRaw);
-      if (hist.length > 43) hist.shift();
-      const localAvg = hist.reduce((s, v) => s + v, 0) / hist.length;
-      const variance = hist.reduce((s, v) => s + (v - localAvg) ** 2, 0) / hist.length;
-      const thresh = localAvg * (1.25 + variance * 6);
+      // ---- Beat detection: spectral flux (onset) on bass energy ----
+      // A beat is a sharp RISE in bass, not just loud bass — this tracks the
+      // music even when the bass is sustained.
+      const flux = Math.max(0, bg - this._prevBass);
+      this._prevBass = bg;
+      const fh = this._fluxHist;
+      fh.push(flux);
+      if (fh.length > 43) fh.shift();
+      const avg = fh.reduce((s, v) => s + v, 0) / fh.length;
+      const std = Math.sqrt(fh.reduce((s, v) => s + (v - avg) ** 2, 0) / fh.length);
 
       const now = performance.now();
-      if (bassRaw > thresh && bassRaw > 0.12 && now - this._lastBeat > 120) {
+      let fresh = false;
+      if (flux > avg + std * 1.4 + 0.006 && bg > 0.12 && now - this._lastBeat > 100) {
         this._lastBeat = now;
         this.beat = 1;
+        fresh = true;
       } else {
-        this.beat *= 0.90; // decay
+        this.beat *= 0.86; // decay to a visible pulse
       }
-      return this.beat > 0.7 && (now - this._lastBeat) < 20; // true on fresh beat
+      return fresh; // true only on the beat's onset frame
     }
   }
 

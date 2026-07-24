@@ -50,67 +50,46 @@
     </div>
   </div>
 
-  <!-- Command bar -->
-  <form id="commandBar" class="command-bar hidden" autocomplete="off">
-    <span class="cmd-label">DIRECT</span>
-    <input id="commandInput" class="cmd-input" type="text"
-           placeholder='Set the vibe — e.g. "aggressive neon rave" or "chill deep space"' />
-    <button type="submit" class="cmd-go">Go</button>
-  </form>
-
-  <!-- Genre / cinematic-mood picker -->
+  <!-- Style panel: one category at a time, as a clean centered sheet -->
   <div id="stylePanel" class="style-panel hidden">
-    <div class="sp-section">
-      <span class="sp-label">Theme</span>
-      <div class="chips" id="themeChips"></div>
+    <div class="sp-head">
+      <span class="sp-title">🎚 Style</span>
+      <button class="sp-close" id="styleClose" title="Close">✕</button>
     </div>
-    <div class="sp-section">
-      <span class="sp-label">Genre</span>
-      <div class="chips" id="genreChips"></div>
+    <div class="sp-tabs" id="spTabs">
+      <button class="sp-tab on" data-cat="theme">Themes</button>
+      <button class="sp-tab" data-cat="genre">Genre</button>
+      <button class="sp-tab" data-cat="mood">Mood</button>
+      <button class="sp-tab" data-cat="art">Art</button>
+      <button class="sp-tab" data-cat="look">Look</button>
+      <button class="sp-tab" data-cat="scene">Scene</button>
     </div>
-    <div class="sp-section">
-      <span class="sp-label">Cinematic mood</span>
-      <div class="chips" id="moodChips"></div>
+    <div class="sp-body">
+      <div class="chips" id="themeChips" data-cat="theme"></div>
+      <div class="chips" id="genreChips" data-cat="genre" hidden></div>
+      <div class="chips" id="moodChips" data-cat="mood" hidden></div>
+      <div class="chips" id="artChips" data-cat="art" hidden></div>
+      <div class="chips" id="lookChips" data-cat="look" hidden></div>
+      <div class="chips" id="sceneChips" data-cat="scene" hidden></div>
     </div>
-    <div class="sp-section">
-      <span class="sp-label">Art style</span>
-      <div class="chips" id="artChips"></div>
-    </div>
-    <div class="sp-section">
-      <span class="sp-label">Look / film</span>
-      <div class="chips" id="lookChips"></div>
+    <div class="sp-sliders">
+      <label class="slider-wrap" title="Intensity"><span>⚡</span>
+        <input type="range" id="intensity" min="0" max="100" value="80" /></label>
+      <label class="slider-wrap" title="Color"><span>🎨</span>
+        <input type="range" id="hue" min="0" max="100" value="60" /></label>
     </div>
   </div>
 
-  <!-- Control dock -->
+  <!-- Control dock (compact) -->
   <div id="dock" class="dock hidden">
-    <div class="dock-group">
-      <button class="btn" id="btnPlay" title="Play / Pause (Space)">⏸</button>
-      <button class="btn" id="btnAuto" title="Auto-Direct (A)">🎬 Auto</button>
-      <button class="btn" id="btnPilot" title="Autopilot — auto-cycles the whole look (P)">🛸 Autopilot</button>
-      <button class="btn" id="btnPhoto" title="Drop in your photos — runs them through art styles, mood-matched">🖼 Photos</button>
-      <button class="btn" id="btnStyle" title="Genres &amp; cinematic moods (G)">🎚 Style</button>
-    </div>
-
-    <div class="dock-group scenes" id="sceneDots" title="Scenes (1–5)"></div>
-
-    <div class="dock-group">
-      <label class="slider-wrap" title="Intensity">
-        <span>⚡</span>
-        <input type="range" id="intensity" min="0" max="100" value="80" />
-      </label>
-      <label class="slider-wrap" title="Color">
-        <span>🎨</span>
-        <input type="range" id="hue" min="0" max="100" value="60" />
-      </label>
-    </div>
-
-    <div class="dock-group">
-      <button class="btn" id="btnAirplay" title="AirPlay to Apple TV">📺 AirPlay</button>
-      <button class="btn" id="btnShare" title="Share &amp; embed this look">🔗 Embed</button>
-      <button class="btn" id="btnSource" title="Change audio source">🔊 Source</button>
-      <button class="btn" id="btnFullscreen" title="Fullscreen (F)">⛶ TV</button>
-    </div>
+    <button class="btn" id="btnPlay" title="Play / Pause (Space)">⏸</button>
+    <button class="btn" id="btnStyle" title="Themes, genres, scenes (G)">🎚 Style</button>
+    <button class="btn" id="btnPilot" title="Autopilot — runs itself (P)">🛸 Auto</button>
+    <button class="btn" id="btnPhoto" title="Your photos → art show">🖼 Photos</button>
+    <button class="btn" id="btnAirplay" title="Cast to TV (AirPlay / Roku / mirror)">📺 Cast</button>
+    <button class="btn" id="btnSource" title="Change audio source">🔊 Source</button>
+    <button class="btn" id="btnFullscreen" title="Fullscreen (F)">⛶ TV</button>
+    <button class="btn" id="btnShare" title="Share &amp; embed">🔗 Embed</button>
   </div>
 
   <!-- Hidden video: mirrors the live canvas so Safari can AirPlay the visuals -->
@@ -123,22 +102,28 @@
   <div id="airplayModal" class="modal hidden">
     <div class="modal-card">
       <button class="modal-close" id="airClose" title="Close">✕</button>
-      <h2>📺 Put Audivue on your TV</h2>
-      <p class="modal-sub">Two ways to AirPlay to an Apple TV or AirPlay-2 TV:</p>
+      <h2>📺 Cast Audivue to your TV</h2>
+      <p class="modal-sub">Works with Apple TV, AirPlay-2 TVs, and Roku.</p>
 
-      <label class="field-label">Option A — direct AirPlay (Safari)</label>
+      <label class="field-label">Apple TV / AirPlay-2 TV (Safari)</label>
       <p class="modal-note" style="margin-top:0">
-        Use the <strong>📺 AirPlay</strong> button in <strong>Safari</strong> on iPhone, iPad, or Mac.
-        If a picker appears, choose your Apple TV — only the visuals are sent, full-screen and clean.
+        Tap the <strong>📺 Cast</strong> button in <strong>Safari</strong> on iPhone, iPad, or Mac and pick
+        your TV — only the visuals are sent, full-screen and clean.
       </p>
 
-      <label class="field-label">Option B — Screen Mirroring (works everywhere)</label>
+      <label class="field-label">Roku</label>
       <ol class="air-steps">
-        <li><strong>iPhone / iPad:</strong> open <em>Control Center</em> → <em>Screen Mirroring</em> → pick your Apple TV.</li>
-        <li><strong>Mac:</strong> <em>Control Center</em> → <em>Screen Mirroring</em> → your Apple TV (or the menu-bar AirPlay icon).</li>
-        <li>Back in Audivue, press <strong>⛶ TV</strong> for fullscreen. The screen is kept awake automatically.</li>
+        <li><strong>Newer Roku (AirPlay 2):</strong> on the Roku, enable <em>Settings → Apple AirPlay and HomeKit</em>. Then on your iPhone/iPad/Mac, open <em>Screen Mirroring / AirPlay</em> and pick the Roku.</li>
+        <li><strong>Android / Windows Roku:</strong> Roku <em>Settings → System → Screen mirroring</em> → then cast from your device's <em>Smart View / Project</em>.</li>
       </ol>
-      <p class="modal-note">Tip: Screen Mirroring also carries the music if it's playing on the same device. With direct AirPlay, keep the audio playing on your device.</p>
+
+      <label class="field-label">Any phone or computer — Screen Mirroring</label>
+      <ol class="air-steps">
+        <li><strong>iPhone / iPad:</strong> <em>Control Center</em> → <em>Screen Mirroring</em> → your TV.</li>
+        <li><strong>Mac:</strong> <em>Control Center</em> → <em>Screen Mirroring</em> → your TV.</li>
+        <li>Then press <strong>⛶ TV</strong> here for fullscreen — the screen is kept awake automatically.</li>
+      </ol>
+      <p class="modal-note">Tip: Screen Mirroring carries the music too if it's playing on the same device. With direct AirPlay, keep the audio playing on your device.</p>
     </div>
   </div>
 

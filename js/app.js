@@ -36,20 +36,30 @@
     toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
   }
 
-  /* ---------------- Scene dots ---------------- */
-  const dotsWrap = $('sceneDots');
+  /* ---------------- Scene chips (Scene tab in the Style panel) ---------------- */
+  const sceneWrap = $('sceneChips');
   SCENE_NAMES.forEach((name, i) => {
-    const d = document.createElement('div');
-    d.className = 'dot' + (i === 0 ? ' on' : '');
-    d.title = name;
-    d.addEventListener('click', () => { director.cutTo(i); toast('Scene · ' + name); });
-    dotsWrap.appendChild(d);
+    const c = document.createElement('button');
+    c.className = 'chip';
+    c.type = 'button';
+    c.textContent = name;
+    c.addEventListener('click', () => { director.cutTo(i); toast('🎬 ' + name); kickIdle(); });
+    sceneWrap.appendChild(c);
   });
   function syncDots() {
     const cur = director.p.transition > 0 ? director.p.sceneNext : director.p.scene;
-    [...dotsWrap.children].forEach((d, i) => d.classList.toggle('on', i === cur));
-    $('hudScene').textContent = SCENE_NAMES[cur];
+    [...sceneWrap.children].forEach((c, i) => c.classList.toggle('on', i === cur));
+    const hud = $('hudScene'); if (hud) hud.textContent = SCENE_NAMES[cur];
   }
+
+  /* ---------------- Style panel tabs ---------------- */
+  const spTabs = document.querySelectorAll('#spTabs .sp-tab');
+  const spGroups = document.querySelectorAll('#stylePanel .chips');
+  spTabs.forEach((tab) => tab.addEventListener('click', () => {
+    spTabs.forEach((t) => t.classList.toggle('on', t === tab));
+    spGroups.forEach((g) => { g.hidden = g.dataset.cat !== tab.dataset.cat; });
+  }));
+  $('styleClose').addEventListener('click', () => toggleStyle(false));
 
   /* ---------------- Genre / mood picker ---------------- */
   function buildChips(wrapId, list, group) {
@@ -207,7 +217,7 @@
     autopilot.on = on;
     autopilot.timer = 0;
     $('btnPilot').classList.toggle('on', on);
-    if (on) { director.autoDirect = true; $('btnAuto').classList.add('on'); }
+    if (on) director.autoDirect = true;
   }
 
   // Pick a fresh random genre + occasional cinematic mood, and apply it.
@@ -267,7 +277,6 @@
     if (!ok) return;
     started = true;
     $('welcome').classList.add('hidden');
-    $('commandBar').classList.remove('hidden');
     $('dock').classList.remove('hidden');
     updatePlayBtn();
     kickIdle();
@@ -290,30 +299,10 @@
   document.querySelectorAll('.src-btn').forEach((b) =>
     b.addEventListener('click', () => begin(b.dataset.source)));
 
-  /* ---------------- Command bar ---------------- */
-  $('commandBar').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const text = $('commandInput').value.trim();
-    if (!text) return;
-    const { params, matched } = Commands.parseCommand(text);
-    director.applyCommand(params);
-    // reflect on sliders
-    if (params.intensity !== undefined) $('intensity').value = Math.round(params.intensity * 100);
-    if (params.hue !== undefined) $('hue').value = Math.round(params.hue * 100);
-    toast(matched ? '🎬 Directing · "' + text + '"' : 'Hmm, try moods like "neon", "ocean", "rave", "chill".');
-    $('commandInput').blur();
-  });
-
   /* ---------------- Dock controls ---------------- */
   $('btnPlay').addEventListener('click', () => { audio.togglePlay(); updatePlayBtn(); });
   function updatePlayBtn() { $('btnPlay').textContent = audio.playing ? '⏸' : '▶'; }
-
-  $('btnAuto').addEventListener('click', () => {
-    const on = director.toggleAuto();
-    $('btnAuto').classList.toggle('on', on);
-    toast(on ? '🎬 Auto-Direct on' : 'Auto-Direct off — you\'re driving');
-  });
-  $('btnAuto').classList.toggle('on', director.autoDirect);
+  director.autoDirect = true; // beat-synced scene cuts always on
 
   $('intensity').addEventListener('input', (e) => director.setIntensity(e.target.value / 100));
   $('hue').addEventListener('input', (e) => director.setHue(e.target.value / 100));
@@ -406,23 +395,18 @@
 
   /* ---------------- Keyboard ---------------- */
   document.addEventListener('keydown', (e) => {
-    if (document.activeElement === $('commandInput')) {
-      if (e.key === 'Escape') $('commandInput').blur();
-      return;
-    }
     switch (e.key.toLowerCase()) {
       case ' ': e.preventDefault(); audio.togglePlay(); updatePlayBtn(); break;
       case 'f': toggleFullscreen(); break;
-      case 'a': $('btnAuto').click(); break;
       case 'g': toggleStyle(); break;
       case 'p': $('btnPilot').click(); break;
-      case 'escape': if (airOn) exitAir(); break;
+      case 'escape':
+        if (airOn) exitAir();
+        else if (!$('stylePanel').classList.contains('hidden')) toggleStyle(false);
+        break;
       case 'h': document.body.classList.toggle('idle'); break;
       case 'arrowleft': director.setHue((director.target.hue + 0.95) % 1); $('hue').value = Math.round(director.target.hue*100); break;
       case 'arrowright': director.setHue((director.target.hue + 0.05) % 1); $('hue').value = Math.round(director.target.hue*100); break;
-      case '/': e.preventDefault(); $('commandInput').focus(); break;
-      default:
-        if (e.key >= '1' && e.key <= '5') director.cutTo(parseInt(e.key, 10) - 1);
     }
     kickIdle();
   });
@@ -436,15 +420,12 @@
     clearTimeout(idleTimer);
     idleTimer = setTimeout(() => {
       const presenting = document.fullscreenElement || airOn || document.body.classList.contains('kiosk');
-      if (started && presenting && document.activeElement !== $('commandInput')) {
-        document.body.classList.add('idle');
-      }
+      const panelOpen = !$('stylePanel').classList.contains('hidden');
+      if (started && presenting && !panelOpen) document.body.classList.add('idle');
     }, 5000);
   }
   ['mousemove', 'pointermove', 'pointerdown', 'touchstart', 'click', 'wheel', 'keydown'].forEach((ev) =>
     document.addEventListener(ev, kickIdle, { passive: true }));
-  // Typing or focusing the vibe box always keeps the UI awake.
-  ['input', 'focus', 'blur'].forEach((ev) => $('commandInput').addEventListener(ev, kickIdle));
 
   /* ---------------- Share / embed ---------------- */
   const clamp01 = (v) => Math.max(0, Math.min(1, v));
@@ -518,7 +499,6 @@
 
     $('intensity').value = Math.round(director.target.intensity * 100);
     $('hue').value = Math.round(director.target.hue * 100);
-    $('btnAuto').classList.toggle('on', director.autoDirect);
 
     const kiosk = q.get('kiosk') === '1' || q.get('ui') === 'off';
     const src = q.get('source'); // mic | file | display
