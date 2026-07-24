@@ -84,9 +84,6 @@
     });
   }
   buildChips('themeChips', Commands.THEMES, 'theme');
-  buildChips('genreChips', Commands.GENRES, 'genre');
-  buildChips('moodChips', Commands.CINEMATIC, 'mood');
-  buildChips('artChips', Commands.ARTSTYLES, 'art');
   buildChips('lookChips', Commands.LOOKS, 'look');
 
   /* ---------------- Photo drop-in ---------------- */
