@@ -25,6 +25,11 @@ required). Open `index.html` and go.
   or a grade (Noir, Vintage, VHS, Pop Art, Cinematic).
 - **Film looks:** Noir B&W · Vintage · VHS Retro · Pop Art · Cinematic —
   an aesthetic grade layered over any scene.
+- **Photo art show:** drop in one or many photos and Audivue runs them
+  *through* the art movements — Van-Gogh-ifies, Warhol pop-arts,
+  watercolors and kaleidoscopes them — while crossfading between your
+  images, mood-matched to the song's energy. Colors are pulled from each
+  photo into the palette.
 - **Autopilot:** a self-running show that auto-cycles the whole look
   (genre + mood) over time — hands-free, no clicks.
 - **AirPlay mode:** stream the visuals to an Apple TV. In Safari it opens

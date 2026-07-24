@@ -101,31 +101,103 @@
         h /= 6; if (h < 0) h += 1;
       }
       const s = max === 0 ? 0 : dl / max;
-      return { hue: h, saturation: Math.min(1, s * 1.2 + 0.2) };
+      const val = max;
+      // "energy" = how bright + vivid the shot is (used to mood-match to the song)
+      return { hue: h, saturation: Math.min(1, s * 1.2 + 0.2), energy: val * 0.6 + s * 0.4 };
     } catch (e) { return null; }
   }
 
-  function loadPhoto(file) {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      viz.setPhoto(img);
-      const pal = extractPalette(img);
-      if (pal) {
-        director.setHue(pal.hue);
-        director.setSaturation(pal.saturation);
-        $('hue').value = Math.round(pal.hue * 100);
+  // The photo scenes (plain + art treatments) the show rotates through.
+  const PHOTO_SCENES = ['Photo', 'Photo Van Gogh', 'Photo Pop', 'Photo Watercolor', 'Photo Kaleido']
+    .map((n) => SCENE_NAMES.indexOf(n)).filter((i) => i >= 0);
+  let photos = [];
+  const show = { on: false, artT: 0, artIv: 6.5, imgT: 0, imgIv: 7.5, cur: 0, cf: false, cfT: 0, cfDur: 1.6, nextIdx: 0 };
+
+  function isPhotoScene() {
+    const s = director.p.transition > 0 ? director.p.sceneNext : director.p.scene;
+    return PHOTO_SCENES.indexOf(s) >= 0;
+  }
+
+  function startCrossfade() {
+    if (photos.length < 2) return;
+    // pick the photo whose mood (energy) best fits the music right now
+    const target = audio.level, cur = show.cur;
+    let best = -1, bestD = 1e9;
+    for (let i = 0; i < photos.length; i++) {
+      if (i === cur) continue;
+      const d = Math.abs(photos[i].energy - target) + Math.random() * 0.15;
+      if (d < bestD) { bestD = d; best = i; }
+    }
+    if (best < 0) best = (cur + 1) % photos.length;
+    show.nextIdx = best;
+    viz.setPhotoB(photos[best].img);
+    show.cf = true; show.cfT = 0;
+  }
+
+  // Driven each frame while a photo scene is showing.
+  function updatePhotoShow(dt) {
+    if (!show.on || !isPhotoScene()) return;
+    show.artT += dt;
+    if (show.artT >= show.artIv) {           // rotate the art treatment
+      show.artT = 0;
+      let n = director.p.scene;
+      while (n === director.p.scene) n = PHOTO_SCENES[Math.floor(Math.random() * PHOTO_SCENES.length)];
+      director.cutTo(n);
+    }
+    if (photos.length > 1) {
+      if (show.cf) {                          // animate a crossfade
+        show.cfT += dt;
+        viz.photoBlend = Math.min(1, show.cfT / show.cfDur);
+        if (show.cfT >= show.cfDur) {
+          viz.setPhoto(photos[show.nextIdx].img);
+          viz.hasPhotoB = false; viz.photoBlend = 0;
+          show.cur = show.nextIdx; show.cf = false;
+          director.setHue(photos[show.cur].hue);
+          director.setSaturation(photos[show.cur].sat);
+        }
+      } else {
+        show.imgT += dt;
+        if (show.imgT >= show.imgIv) { show.imgT = 0; startCrossfade(); }
       }
-      if (PHOTO_SCENE >= 0) director.cutTo(PHOTO_SCENE);
-      toast('🖼 Your photo is live — reacting to the music');
-      URL.revokeObjectURL(url);
+    }
+  }
+
+  function loadPhotos(files) {
+    const list = Array.from(files).slice(0, 12);
+    const loaded = [];
+    let pending = list.length;
+    const done = () => {
+      if (--pending > 0) return;
+      if (!loaded.length) { toast('Could not load those images.'); return; }
+      photos = loaded;
+      show.cur = 0; show.cf = false; show.artT = 0; show.imgT = 0;
+      viz.hasPhotoB = false; viz.photoBlend = 0;
+      viz.setPhoto(photos[0].img);
+      director.setHue(photos[0].hue);
+      director.setSaturation(photos[0].sat);
+      $('hue').value = Math.round(photos[0].hue * 100);
+      if (PHOTO_SCENES.length) director.cutTo(PHOTO_SCENES[0]);
+      show.on = true;
+      setAutopilot(false); // the photo show takes over the auto-cycling
+      toast(photos.length > 1
+        ? `🖼 ${photos.length} photos — running an art show, mood-matched to the music`
+        : '🖼 Your photo — running it through the art styles');
     };
-    img.onerror = () => toast('Could not load that image.');
-    img.src = url;
+    list.forEach((file) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        const pal = extractPalette(img);
+        loaded.push({ img, hue: pal ? pal.hue : 0.6, sat: pal ? pal.saturation : 0.8, energy: pal ? pal.energy : 0.5 });
+        URL.revokeObjectURL(url); done();
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); done(); };
+      img.src = url;
+    });
   }
 
   $('btnPhoto').addEventListener('click', () => $('photoInput').click());
-  $('photoInput').addEventListener('change', (e) => { if (e.target.files[0]) loadPhoto(e.target.files[0]); });
+  $('photoInput').addEventListener('change', (e) => { if (e.target.files.length) loadPhotos(e.target.files); });
 
   /* ---------------- Autopilot (self-running show) ---------------- */
   const autopilot = { on: false, timer: 0, interval: 20 };
@@ -494,6 +566,7 @@
       autopilot.timer += dt;
       if (autopilot.timer >= autopilot.interval) { autopilot.timer = 0; autopilotStep(); }
     }
+    updatePhotoShow(dt);
 
     director.update(dt, freshBeat, audio);
     viz.render(t, audio, director.p);
