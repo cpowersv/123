@@ -7,7 +7,7 @@
 (function (global) {
   'use strict';
 
-  const SCENE_COUNT = 29;
+  const SCENE_COUNT = 33;
 
   class Director {
     constructor() {
@@ -84,8 +84,11 @@
     }
 
     cutToRandom() {
-      let n = this.p.scene;
-      while (n === this.p.scene) n = Math.floor(Math.random() * SCENE_COUNT);
+      // Auto-cuts avoid the photo scenes (24-28) — those need a loaded photo.
+      let n = this.p.scene, guard = 0;
+      while ((n === this.p.scene || (n >= 24 && n <= 28)) && guard++ < 30) {
+        n = Math.floor(Math.random() * SCENE_COUNT);
+      }
       // A cut sometimes also nudges the hue for variety.
       if (Math.random() < 0.4) this.target.hue = (this.target.hue + 0.12 + Math.random() * 0.2) % 1;
       this.cutTo(n);

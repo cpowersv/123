@@ -12,7 +12,8 @@
                   'Waveform', 'Hex', 'Rings', 'Fireflies',
                   'Vortex', 'Matrix', 'Sunburst', 'Warp',
                   'Van Gogh', 'Pop Art', 'Watercolor', 'Impressionist', 'Photo',
-                  'Photo Van Gogh', 'Photo Pop', 'Photo Watercolor', 'Photo Kaleido'];
+                  'Photo Van Gogh', 'Photo Pop', 'Photo Watercolor', 'Photo Kaleido',
+                  'Mondrian', 'Stained Glass', 'Ukiyo-e', 'Art Deco'];
 
   const VERT = `
     attribute vec2 aPos;
@@ -607,6 +608,71 @@
     return col*(0.7 + uLevel*0.5)*smoothstep(1.6, 0.1, r);
   }
 
+  // ---- Scene 29: Mondrian (De Stijl) ----
+  vec3 sceneMondrian(vec2 uv){
+    vec2 g = uv*1.5 + 0.5;
+    vec2 cell = floor(g*2.0);
+    float rnd = fract(hash(cell) + floor(uTime*0.5)*0.09);
+    vec3 c = vec3(0.93);
+    if(rnd < 0.16) c = vec3(0.85,0.12,0.12);
+    else if(rnd < 0.30) c = vec3(0.10,0.25,0.75);
+    else if(rnd < 0.42) c = vec3(0.95,0.80,0.10);
+    else if(rnd < 0.50) c = vec3(0.05);
+    c *= 0.82 + 0.5*uBeat*(rnd < 0.50 ? 1.0 : 0.0);
+    vec2 f = fract(g*2.0);
+    float line = step(f.x,0.05)+step(0.95,f.x)+step(f.y,0.05)+step(0.95,f.y);
+    c = mix(c, vec3(0.03), clamp(line,0.0,1.0));
+    return c*(0.75 + uLevel*0.5);
+  }
+
+  // ---- Scene 30: Stained Glass ----
+  vec3 sceneStained(vec2 uv){
+    vec2 p = uv*3.0 + vec2(uTime*0.05, 0.0);
+    vec2 g = floor(p), f = fract(p);
+    float d1 = 8.0, d2 = 8.0; vec2 id = vec2(0.0);
+    for(int j=-1;j<=1;j++){ for(int i=-1;i<=1;i++){
+      vec2 o = vec2(float(i), float(j));
+      vec2 pos = o + 0.5 + 0.4*sin(uTime*0.5 + 6.2831*hash2(g+o));
+      float d = length(pos - f);
+      if(d < d1){ d2 = d1; d1 = d; id = g+o; } else if(d < d2){ d2 = d; }
+    }}
+    float lead = smoothstep(0.0, 0.06, d2 - d1);       // black leading
+    float rnd = hash(id);
+    float pulse = 0.5 + 0.5*sin(uTime*2.0 + rnd*6.2831 + uBass*4.0);
+    vec3 glass = hsv2rgb(vec3(fract(uHue + rnd*0.5), 0.9, 0.35 + 0.65*pulse));
+    vec3 col = glass*lead;
+    col += vec3(1.0)*pow(pulse, 4.0)*uTreble*0.25;
+    return col*(0.6 + uLevel*0.7);
+  }
+
+  // ---- Scene 31: Ukiyo-e (woodblock wave) ----
+  vec3 sceneUkiyoe(vec2 uv){
+    float t = uTime*0.3;
+    float wave = 0.0;
+    for(int i=0;i<3;i++){ float fi = float(i);
+      wave += sin(uv.x*(3.0+fi*2.0) + t*(1.0+fi*0.5) + uBass*2.0)*(0.08/(fi+1.0)); }
+    float y = uv.y - wave;
+    vec3 indigo = vec3(0.09,0.15,0.35), cream = vec3(0.92,0.88,0.75), foam = vec3(0.98);
+    vec3 col = y < 0.0 ? indigo : cream;
+    if(y < 0.0){ float band = step(0.5, fract(y*8.0)); col = mix(indigo, indigo*1.5, band*0.5); }
+    float crest = smoothstep(0.02, 0.0, abs(y)) * (0.5 + 0.5*sin(uv.x*40.0));
+    col = mix(col, foam, crest);
+    return col*(0.85 + uLevel*0.3 + uBeat*0.1);
+  }
+
+  // ---- Scene 32: Art Deco ----
+  vec3 sceneArtDeco(vec2 uv){
+    uv.x = abs(uv.x);
+    float a = atan(uv.y, uv.x), r = length(uv);
+    float fan = step(0.5, 0.5 + 0.5*sin(a*10.0 - r*4.0 - uTime*0.3));
+    vec3 gold = vec3(0.85,0.68,0.25), black = vec3(0.04);
+    vec3 col = mix(black, gold, fan);
+    float arc = step(0.5, fract(r*4.0 - uTime*0.3));
+    col = mix(col, gold*1.25, arc*0.3);
+    col = mix(col, gold, smoothstep(0.14, 0.09, r));
+    return col*(0.72 + uLevel*0.5 + uBeat*0.18);
+  }
+
   vec3 renderScene(int idx, vec2 uv){
     if(idx==24) return scenePhoto(uv);
     if(idx==25) return scenePhotoVanGogh(uv);
@@ -636,7 +702,11 @@
     if(idx==20) return sceneVanGogh(uv);
     if(idx==21) return scenePopArt(uv);
     if(idx==22) return sceneWatercolor(uv);
-    return sceneImpressionist(uv);
+    if(idx==23) return sceneImpressionist(uv);
+    if(idx==29) return sceneMondrian(uv);
+    if(idx==30) return sceneStained(uv);
+    if(idx==31) return sceneUkiyoe(uv);
+    return sceneArtDeco(uv);
   }
 
   // ---- Film / aesthetic grades applied over any scene ----
@@ -678,6 +748,26 @@
       vec3 grade = mix(teal, orange, smoothstep(0.15, 0.85, lum));
       col = mix(col, col*grade*1.5, 0.6);
       if(abs(uv.y) > 0.43) col = vec3(0.0);         // widescreen bars
+    } else if(L == 6){               // Pencil sketch — crosshatch on paper
+      float lm = lum;
+      float h1 = sin((gl_FragCoord.x + gl_FragCoord.y)*0.7);
+      float h2 = sin((gl_FragCoord.x - gl_FragCoord.y)*0.7);
+      float h3 = sin(gl_FragCoord.x*0.9);
+      float ink = 0.0;
+      if(lm < 0.75) ink += smoothstep(0.0, 0.25, h1)*(1.0 - lm);
+      if(lm < 0.5)  ink += smoothstep(0.0, 0.25, h2)*(1.0 - lm);
+      if(lm < 0.28) ink += smoothstep(0.0, 0.25, h3)*(1.0 - lm);
+      float g = 0.93 - ink*0.9 + (hash(gl_FragCoord.xy) - 0.5)*0.05;
+      col = vec3(clamp(g, 0.0, 1.0));
+    } else if(L == 7){               // Comic ink — cel bands + halftone
+      col = mix(vec3(lum), col, 1.5);
+      col = floor(col*4.0 + 0.5)/4.0;
+      float b = fract(lum*4.0);
+      float ink = smoothstep(0.07, 0.0, b) + smoothstep(0.93, 1.0, b);
+      col = mix(col, vec3(0.02), clamp(ink, 0.0, 1.0)*0.8);
+      float d = length(fract(gl_FragCoord.xy/6.0) - 0.5);
+      float ht = smoothstep(0.3*(1.0-lum), 0.28*(1.0-lum), d);
+      col *= 0.6 + 0.4*ht;
     }
     return col;
   }

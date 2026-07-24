@@ -69,6 +69,8 @@
     { name: 'VHS Retro', keys: ['vhs', 'glitch', 'tape', 'analog'], p: { look: 3 } },
     { name: 'Pop Art',   keys: ['pop art', 'comic', 'posterize', 'technicolor'], p: { look: 4 } },
     { name: 'Cinematic', keys: ['cinematic look', 'cinema', 'film look', 'letterbox', 'teal orange', 'widescreen'], p: { look: 5 } },
+    { name: 'Pencil',    keys: ['pencil', 'sketch', 'crosshatch', 'hand drawn'], p: { look: 6 } },
+    { name: 'Comic Ink', keys: ['comic', 'ink', 'cel shaded', 'manga'], p: { look: 7 } },
   ];
 
   /* ---- Themes: one-tap complete vibes (scene + palette + look + pace) ---- */
@@ -123,6 +125,14 @@
       p: { scene: 22, saturation: 0.5, look: 0 } },
     { name: 'Impressionist', keys: ['impressionist', 'impressionism', 'monet', 'dabs'],
       p: { scene: 23, saturation: 0.8, look: 0 } },
+    { name: 'Mondrian',      keys: ['mondrian', 'de stijl', 'primary blocks'],
+      p: { scene: 29, saturation: 1.0, look: 0 } },
+    { name: 'Stained Glass', keys: ['stained glass', 'mosaic', 'cathedral glass'],
+      p: { scene: 30, saturation: 0.9, look: 0 } },
+    { name: 'Ukiyo-e',       keys: ['ukiyo-e', 'ukiyoe', 'woodblock', 'japanese wave', 'hokusai'],
+      p: { scene: 31, saturation: 0.7, look: 0 } },
+    { name: 'Art Deco',      keys: ['art deco', 'deco', 'gatsby'],
+      p: { scene: 32, hue: 0.11, saturation: 0.8, look: 0 } },
     { name: 'Cyberpunk',     keys: ['cyberpunk', 'neon city', 'blade runner'],
       p: { scene: 0, hue: 0.78, saturation: 1.0, look: 0 } },
     { name: 'Surreal',       keys: ['surreal', 'surrealism', 'dali', 'dreamscape'],
