@@ -1,0 +1,364 @@
+<title>Audivue — Live</title>
+<meta name="description" content="Audivue live player — a beat-synced audio visualizer." />
+
+<style>
+  :root {
+    --bg:#100B18; --bg-2:#1E1630; --bg-3:#271C3D; --text:#F3EEF7; --muted:#A99CBB;
+    --amber:#FFC24B; --amber-2:#F5A623; --violet:#9B7DFF; --on-amber:#241704;
+    --line:rgba(255,255,255,0.09); --line-2:rgba(255,255,255,0.05);
+    --glow:rgba(255,194,75,0.28); --card-sh:0 40px 100px -30px rgba(0,0,0,0.8);
+    --grad:linear-gradient(135deg,var(--amber),var(--amber-2));
+    --font-display:-apple-system,'Segoe UI',system-ui,Roboto,Arial,sans-serif;
+    --font-body:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,sans-serif;
+    --font-mono:ui-monospace,'SF Mono','Cascadia Code','Roboto Mono',Menlo,monospace;
+  }
+  :root[data-theme="light"] {
+    --bg:#EFEAF5; --bg-2:#FFFFFF; --bg-3:#ECE6F6; --text:#1B1126; --muted:#5F5372;
+    --amber:#C7790A; --amber-2:#A9640A; --violet:#6B4DE6; --on-amber:#FFFFFF;
+    --line:rgba(24,12,38,0.12); --line-2:rgba(24,12,38,0.06);
+    --glow:rgba(255,178,60,0.35); --card-sh:0 30px 70px -30px rgba(50,30,80,0.4);
+  }
+
+  * { box-sizing:border-box; }
+  html, body { height:100%; }
+  body {
+    margin:0; font-family:var(--font-body); color:var(--text);
+    background:
+      radial-gradient(60% 40% at 78% 6%, var(--glow), transparent 68%),
+      radial-gradient(55% 45% at 14% 90%, rgba(155,125,255,0.20), transparent 72%),
+      var(--bg);
+    -webkit-font-smoothing:antialiased;
+    min-height:100dvh; display:grid; place-items:center; padding:24px;
+  }
+  button:focus-visible { outline:2px solid var(--amber); outline-offset:2px; }
+
+  .app { width:100%; max-width:392px; }
+
+  .topbar { display:flex; align-items:center; justify-content:space-between; margin:0 4px 14px; }
+  .brand { display:flex; align-items:center; gap:9px; font-family:var(--font-display); font-weight:800; letter-spacing:-0.02em; font-size:17px; }
+  .mark { width:26px; height:26px; border-radius:8px; display:grid; place-items:center; background:var(--grad); box-shadow:0 4px 16px -4px var(--glow); }
+  .mark svg { display:block; }
+  .brand .dom { color:var(--muted); font-weight:500; font-family:var(--font-mono); font-size:12px; }
+  .theme-btn { background:transparent; border:1px solid var(--line); color:var(--muted); border-radius:999px; width:32px; height:32px; cursor:pointer; font-size:14px; display:grid; place-items:center; }
+  .theme-btn:hover { color:var(--text); border-color:var(--amber); }
+
+  .card { background:linear-gradient(180deg,var(--bg-2),var(--bg-3)); border:1px solid var(--line); border-radius:26px; padding:22px; box-shadow:var(--card-sh); }
+
+  .cover { width:100%; aspect-ratio:1/1; border-radius:18px; position:relative; overflow:hidden;
+    background:radial-gradient(circle at 32% 26%, var(--wave-b,var(--violet)), transparent 58%), linear-gradient(150deg, var(--wave-a,#3a2668), #120b1f);
+    transition:background .5s ease; margin-bottom:18px; }
+  .cover .glyph { position:absolute; inset:0; display:grid; place-items:center; font-size:64px; color:rgba(255,255,255,0.9); }
+  .cover .badge { position:absolute; top:14px; left:14px; font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.12em; text-transform:uppercase; color:#fff; background:rgba(0,0,0,0.35); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,0.2); padding:5px 10px; border-radius:999px; display:inline-flex; align-items:center; gap:6px; }
+  .cover .badge .pulse { width:6px; height:6px; border-radius:50%; background:var(--amber); animation:pulse 0.5s ease-in-out infinite; }
+  .cover.paused .badge .pulse { animation:none; opacity:.4; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+
+  .track { font-family:var(--font-display); font-weight:800; font-size:1.4rem; letter-spacing:-0.02em; }
+  .artist { color:var(--muted); font-size:14px; margin-top:2px; }
+
+  .scenes { display:flex; gap:7px; margin:16px 0 4px; }
+  .scene-chip { flex:1; font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; padding:7px 0; border-radius:999px; border:1px solid var(--line); background:var(--bg); color:var(--muted); cursor:pointer; transition:border-color .15s,color .15s; }
+  .scene-chip:hover { color:var(--text); }
+  .scene-chip.on { border-color:var(--wave-a); color:var(--text); box-shadow:inset 0 0 0 1px var(--wave-a); }
+
+  .card[data-scene="bars"]      { --wave-a:var(--amber); --wave-b:var(--violet); }
+  .card[data-scene="wave"]      { --wave-a:#38e0d4; --wave-b:#3a86d8; }
+  .card[data-scene="radial"]    { --wave-a:#8db4ff; --wave-b:#c68bff; }
+  .card[data-scene="particles"] { --wave-a:#FFC24B; --wave-b:#ff7ad9; }
+
+  canvas.wave { display:block; width:100%; height:150px; margin:8px 0 8px; }
+  .progress { height:4px; border-radius:2px; background:var(--line); overflow:hidden; cursor:pointer; }
+  .progress i { display:block; height:100%; width:35%; background:var(--grad); transition:width .25s linear; }
+  .times { display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:11.5px; color:var(--muted); font-variant-numeric:tabular-nums; margin-top:7px; }
+
+  .transport { display:flex; align-items:center; justify-content:center; gap:22px; margin-top:16px; }
+  .tbtn { background:transparent; border:none; color:var(--text); cursor:pointer; display:grid; place-items:center; padding:6px; border-radius:50%; }
+  .tbtn:hover { color:var(--amber); }
+  .tbtn svg { display:block; }
+  .play { width:60px; height:60px; border-radius:50%; background:var(--grad); color:var(--on-amber); box-shadow:0 14px 34px -12px var(--glow); transition:transform .12s ease; }
+  .play:hover { transform:scale(1.05); color:var(--on-amber); }
+
+  .foot { text-align:center; color:var(--muted); font-size:11.5px; margin-top:16px; }
+  .foot b { color:var(--text); font-weight:600; }
+
+  @media (prefers-reduced-motion:reduce) { * { animation:none !important; transition:none !important; } .play:hover { transform:none; } }
+</style>
+
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1 8h2l1.5-5 2 11 2-9 1.5 5H15" stroke="#241704" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      Audivue<span class="dom">.io</span>
+    </div>
+    <button class="theme-btn" id="themeBtn" type="button" title="Toggle theme" aria-label="Toggle light or dark theme">◐</button>
+  </div>
+
+  <div class="card" id="card" data-scene="bars">
+    <div class="cover" id="cover" aria-hidden="true">
+      <span class="badge"><span class="pulse"></span> On air</span>
+      <span class="glyph">♪</span>
+    </div>
+
+    <div class="track" id="track">Midnight Frequencies</div>
+    <div class="artist" id="artist">Lena Vox · live from The Basement</div>
+
+    <div class="scenes" id="scenes" role="group" aria-label="Choose a visualizer mode">
+      <button class="scene-chip on" type="button" data-scene="bars" aria-pressed="true">Bars</button>
+      <button class="scene-chip" type="button" data-scene="wave" aria-pressed="false">Wave</button>
+      <button class="scene-chip" type="button" data-scene="radial" aria-pressed="false">Radial</button>
+      <button class="scene-chip" type="button" data-scene="particles" aria-pressed="false">Particles</button>
+    </div>
+
+    <canvas class="wave" id="wave" aria-hidden="true"></canvas>
+    <div class="progress" id="progressBar" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="35" tabindex="0"><i id="prog"></i></div>
+    <div class="times"><span id="elapsed">1:24</span><span id="total">3:57</span></div>
+
+    <div class="transport">
+      <button class="tbtn" id="prev" type="button" aria-label="Previous track"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14l-11-7z"/></svg></button>
+      <button class="tbtn play" id="play" type="button" aria-label="Pause"><svg id="playIcon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button>
+      <button class="tbtn" id="next" type="button" aria-label="Next track"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5l11 7-11 7z"/></svg></button>
+    </div>
+  </div>
+
+  <div class="foot"><b id="room">47</b> listeners in the room</div>
+</div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var tb = document.getElementById('themeBtn');
+  function curTheme() { return root.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); }
+  tb.addEventListener('click', function () {
+    var next = curTheme() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    tb.setAttribute('aria-pressed', next === 'dark' ? 'true' : 'false');
+    readColors(); if (!playing || reduce) drawStatic();
+  });
+
+  /* ---- tracks ---- */
+  var tracks = [
+    { t: 'Midnight Frequencies', a: 'Lena Vox · live from The Basement', len: 237 },
+    { t: 'Neon Undertow', a: 'Kō · Late Set', len: 205 },
+    { t: 'Paper Lanterns', a: 'Ama Reyes · Rooftop Session', len: 268 }
+  ];
+  var ti = 0;
+
+  /* ---- visualizer ---- */
+  var cv = document.getElementById('wave'), ctx = cv.getContext('2d');
+  var card = document.getElementById('card');
+  var W, H, dpr, bars = 48, scene = 'bars', playing = !reduce;
+  var beatSec = 60 / 120, startT = performance.now(), lastT = startT;
+  var colA = '#FFC24B', colB = '#9B7DFF', grad = null;
+  var seeds = [], spec = [], peaks = [], parts = [];
+  for (var i = 0; i < bars; i++) { seeds.push(Math.random() * 6.283); spec.push(0); peaks.push(0); }
+  for (var p = 0; p < 70; p++) parts.push({ a: Math.random() * 6.283, r: Math.random(), sp: 0.25 + Math.random() * 0.8, sz: Math.random() * 2 + 0.7, tw: Math.random() * 6.283 });
+
+  function readColors() {
+    var cs = getComputedStyle(card);
+    colA = (cs.getPropertyValue('--wave-a') || '').trim() || '#FFC24B';
+    colB = (cs.getPropertyValue('--wave-b') || '').trim() || '#9B7DFF';
+    buildGrad();
+  }
+  function buildGrad() { if (!H) return; grad = ctx.createLinearGradient(0, 0, 0, H); grad.addColorStop(0, colA); grad.addColorStop(1, colB); }
+  function size() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = cv.clientWidth; H = cv.clientHeight;
+    cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    buildGrad(); if (!playing || reduce) drawStatic();
+  }
+  function envAt(ph) { return ph < 0.16 ? ph / 0.16 : Math.pow(1 - (ph - 0.16) / 0.84, 2.1); }
+
+  /* Shared "spectrum": bass on the left, treble on the right, swept by the beat.
+     Every mode renders this same data — the way real visualizers share one FFT. */
+  function updateSpectrum(tt, dt) {
+    var ease = 1 - Math.pow(0.0015, dt * 7);
+    for (var j = 0; j < bars; j++) {
+      var f = j / (bars - 1);
+      var ph = ((tt / beatSec) - f * 0.18) % 1; if (ph < 0) ph += 1;
+      var env = ph < 0.16 ? ph / 0.16 : Math.pow(1 - (ph - 0.16) / 0.84, 2.1);
+      var amp = 0.55 + (1 - f) * 0.7;
+      var flow = Math.sin(tt * (2 + f * 5) + seeds[j]) * 0.5 + 0.5;
+      var target = Math.min(0.10 + flow * (0.08 + f * 0.14) + env * 0.60 * amp, 1);
+      spec[j] += (target - spec[j]) * ease;
+      peaks[j] = Math.max(peaks[j] - dt * 0.5, spec[j]);   // classic falling peak caps
+    }
+  }
+
+  function roundBar(x, y, w, h, r) {
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x, y, w, Math.max(h, 0.5), r); else ctx.rect(x, y, w, Math.max(h, 0.5));
+    ctx.fill();
+  }
+
+  /* 1. BARS — the classic spectrum analyzer, mirrored, with peak caps */
+  function modeBars() {
+    var mid = H / 2, bw = W / bars;
+    ctx.fillStyle = grad; ctx.shadowColor = colA; ctx.shadowBlur = 8;
+    for (var j = 0; j < bars; j++) {
+      var h = spec[j] * H * 0.9, x = j * bw + bw * 0.25, w = bw * 0.5;
+      roundBar(x, mid - h / 2, w, h, Math.min(w / 2, 3));
+    }
+    ctx.shadowBlur = 0; ctx.globalAlpha = 0.5; ctx.fillStyle = colA;
+    for (var k = 0; k < bars; k++) {
+      var ph = peaks[k] * H * 0.9, px = k * bw + bw * 0.25;
+      ctx.fillRect(px, mid - ph / 2 - 2, bw * 0.5, 1.5);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* 2. WAVE — oscilloscope: a single continuous line + soft mirror fill */
+  function modeWave(tt) {
+    var mid = H / 2;
+    ctx.beginPath();
+    for (var x = 0; x <= W; x += 3) {
+      var f = x / W, idx = Math.min(bars - 1, Math.floor(f * bars));
+      var amp = spec[idx] * H * 0.42;
+      var y = mid + Math.sin(x * 0.05 - tt * 6) * amp;
+      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = colA; ctx.lineWidth = 2.2; ctx.lineJoin = 'round';
+    ctx.shadowColor = colA; ctx.shadowBlur = 12; ctx.stroke(); ctx.shadowBlur = 0;
+    ctx.lineTo(W, mid); ctx.lineTo(0, mid); ctx.closePath();
+    ctx.globalAlpha = 0.16; ctx.fillStyle = grad; ctx.fill(); ctx.globalAlpha = 1;
+    ctx.globalAlpha = 0.35; ctx.strokeStyle = colB; ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    for (var x2 = 0; x2 <= W; x2 += 3) {
+      var f2 = x2 / W, i2 = Math.min(bars - 1, Math.floor(f2 * bars));
+      var y2 = mid - Math.sin(x2 * 0.05 - tt * 6) * (spec[i2] * H * 0.42) * 0.6;
+      x2 === 0 ? ctx.moveTo(x2, y2) : ctx.lineTo(x2, y2);
+    }
+    ctx.stroke(); ctx.globalAlpha = 1;
+  }
+
+  /* 3. RADIAL — circular spectrum radiating from a pulsing ring */
+  function modeRadial(tt, be) {
+    var cx = W / 2, cy = H / 2, base = Math.min(W, H) * 0.19;
+    ctx.strokeStyle = colB; ctx.globalAlpha = 0.3; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(cx, cy, base + be * 4, 0, 6.283); ctx.stroke(); ctx.globalAlpha = 1;
+    ctx.shadowColor = colA; ctx.shadowBlur = 10; ctx.lineCap = 'round';
+    for (var j = 0; j < bars; j++) {
+      var ang = (j / bars) * 6.283 - 1.5708 + tt * 0.12;
+      var len = base * 0.25 + spec[j] * Math.min(W, H) * 0.34;
+      var r0 = base + be * 4;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(ang) * r0, cy + Math.sin(ang) * r0);
+      ctx.lineTo(cx + Math.cos(ang) * (r0 + len), cy + Math.sin(ang) * (r0 + len));
+      ctx.strokeStyle = j % 2 ? colA : colB;
+      ctx.lineWidth = Math.max(W / bars * 0.34, 1.6);
+      ctx.stroke();
+    }
+    ctx.shadowBlur = 0; ctx.lineCap = 'butt';
+  }
+
+  /* 4. PARTICLES — reactive field pushed outward on each beat */
+  function modeParticles(tt, be) {
+    var cx = W / 2, cy = H / 2, spread = Math.min(W, H) * 0.62;
+    for (var i = 0; i < parts.length; i++) {
+      var p = parts[i];
+      var idx = Math.min(bars - 1, Math.floor(p.r * bars));
+      var rr = (p.r + be * 0.16 + spec[idx] * 0.1) * spread;
+      var ang = p.a + tt * p.sp * 0.22;
+      var x = cx + Math.cos(ang) * rr * (W / Math.min(W, H)) * 0.8;
+      var y = cy + Math.sin(ang) * rr * 0.7;
+      ctx.globalAlpha = Math.min(0.18 + spec[idx] * 0.7 + be * 0.25, 1);
+      ctx.fillStyle = i % 3 === 0 ? colB : colA;
+      ctx.beginPath(); ctx.arc(x, y, p.sz + be * 1.1, 0, 6.283); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.shadowColor = colA; ctx.shadowBlur = 18; ctx.fillStyle = colA;
+    ctx.globalAlpha = 0.5 + be * 0.4;
+    ctx.beginPath(); ctx.arc(cx, cy, 4 + be * 7, 0, 6.283); ctx.fill();
+    ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+  }
+
+  function render(tt, be) {
+    ctx.clearRect(0, 0, W, H);
+    if (scene === 'bars') modeBars();
+    else if (scene === 'wave') modeWave(tt);
+    else if (scene === 'radial') modeRadial(tt, be);
+    else modeParticles(tt, be);
+  }
+
+  function draw(now) {
+    if (!playing) return;
+    now = now || performance.now();
+    var dt = Math.min((now - lastT) / 1000, 0.05); lastT = now;
+    var tt = (now - startT) / 1000;
+    updateSpectrum(tt, dt);
+    render(tt, envAt((tt / beatSec) % 1));
+    requestAnimationFrame(draw);
+  }
+
+  function drawStatic() {
+    if (!grad) buildGrad();
+    for (var j = 0; j < bars; j++) { var f = j / (bars - 1); spec[j] = 0.14 + (1 - f) * 0.45; peaks[j] = spec[j]; }
+    render(0, 0.25);
+  }
+
+  readColors(); size();
+  window.addEventListener('resize', size);
+  if (playing) requestAnimationFrame(draw); else drawStatic();
+
+  /* ---- scenes ---- */
+  var sceneRow = document.getElementById('scenes');
+  sceneRow.addEventListener('click', function (ev) {
+    var c = ev.target.closest('.scene-chip'); if (!c) return;
+    [].forEach.call(sceneRow.children, function (x) { x.classList.remove('on'); x.setAttribute('aria-pressed', 'false'); });
+    c.classList.add('on'); c.setAttribute('aria-pressed', 'true');
+    scene = c.getAttribute('data-scene'); card.setAttribute('data-scene', scene);
+    readColors(); if (!playing || reduce) drawStatic();
+  });
+
+  /* ---- time + progress ---- */
+  var el = document.getElementById('elapsed'), totalEl = document.getElementById('total'), prog = document.getElementById('prog');
+  var progressBar = document.getElementById('progressBar');
+  var secs = 84, TOT = tracks[0].len, timer = null;
+  function fmt(n) { var m = Math.floor(n / 60), ss = n % 60; return m + ':' + (ss < 10 ? '0' : '') + ss; }
+  function paint() {
+    el.textContent = fmt(secs);
+    var pct = Math.round(secs / TOT * 100);
+    prog.style.width = pct + '%';
+    progressBar.setAttribute('aria-valuenow', pct);
+  }
+  function startTimer() { if (timer || reduce) return; timer = setInterval(function () { secs = (secs + 1) % TOT; paint(); }, 1000); }
+  function stopTimer() { clearInterval(timer); timer = null; }
+  paint(); totalEl.textContent = fmt(TOT); if (playing) startTimer();
+
+  function seekTo(pct) { secs = Math.max(0, Math.min(TOT - 1, Math.round(pct / 100 * TOT))); paint(); }
+  progressBar.addEventListener('click', function (ev) { var r = progressBar.getBoundingClientRect(); seekTo((ev.clientX - r.left) / r.width * 100); });
+  progressBar.addEventListener('keydown', function (ev) {
+    if (ev.key === 'ArrowRight') { seekTo(Math.min(100, +progressBar.getAttribute('aria-valuenow') + 5)); ev.preventDefault(); }
+    else if (ev.key === 'ArrowLeft') { seekTo(Math.max(0, +progressBar.getAttribute('aria-valuenow') - 5)); ev.preventDefault(); }
+  });
+
+  /* ---- transport ---- */
+  var playBtn = document.getElementById('play'), playIcon = document.getElementById('playIcon'), cover = document.getElementById('cover');
+  var PLAY = 'M8 5v14l11-7z', PAUSE = 'M7 5h4v14H7zM13 5h4v14h-4z';
+  function setPlaying(on) {
+    playing = on;
+    playIcon.setAttribute('d', on ? PAUSE : PLAY);
+    playBtn.setAttribute('aria-label', on ? 'Pause' : 'Play');
+    cover.classList.toggle('paused', !on);
+    if (on) { lastT = performance.now(); startTimer(); if (!reduce) requestAnimationFrame(draw); }
+    else { stopTimer(); if (!reduce) drawStatic(); }
+  }
+  playBtn.addEventListener('click', function () { setPlaying(!playing); });
+  if (reduce) setPlaying(false);
+
+  var trackEl = document.getElementById('track'), artistEl = document.getElementById('artist'), room = document.getElementById('room');
+  function loadTrack(n) {
+    ti = (n + tracks.length) % tracks.length;
+    var tk = tracks[ti];
+    trackEl.textContent = tk.t; artistEl.textContent = tk.a;
+    TOT = tk.len; secs = 0; totalEl.textContent = fmt(TOT); paint();
+    if (!playing) setPlaying(true);
+  }
+  document.getElementById('next').addEventListener('click', function () { loadTrack(ti + 1); });
+  document.getElementById('prev').addEventListener('click', function () { if (secs > 3) { secs = 0; paint(); } else loadTrack(ti - 1); });
+
+  /* ambient room count */
+  if (!reduce) setInterval(function () { room.textContent = 44 + Math.floor(Math.random() * 8); }, 4000);
+})();
+</script>
