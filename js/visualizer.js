@@ -647,13 +647,20 @@
       float c = clamp((lum - 0.5)*1.6 + 0.5, 0.0, 1.0);
       col = vec3(c);
       col *= 1.0 - dot(uv, uv)*0.7;                 // heavy vignette
-    } else if(L == 2){               // Vintage — faded sepia
+    } else if(L == 2){               // Vintage — old film
       vec3 sep = vec3(dot(col, vec3(0.393,0.769,0.189)),
                       dot(col, vec3(0.349,0.686,0.168)),
                       dot(col, vec3(0.272,0.534,0.131)));
-      col = mix(col, sep, 0.8);
-      col = col*0.82 + 0.07;                        // lifted, milky blacks
-      col *= 1.0 - dot(uv, uv)*0.4;
+      col = mix(col, sep, 0.85);
+      col = col*0.80 + 0.08;                        // lifted, milky blacks
+      float flick = 0.90 + 0.10*sin(uTime*11.0) + 0.05*hash(vec2(floor(uTime*18.0), 1.0)); // projector flicker
+      col *= flick;
+      float scr = step(0.996, hash(vec2(floor(gl_FragCoord.x*0.7), floor(uTime*20.0)))); // vertical scratches
+      col += scr*0.25;
+      float dust = step(0.9975, hash(gl_FragCoord.xy + floor(uTime*24.0))); // dust specks
+      col = mix(col, vec3(0.05), dust);
+      col += (hash(gl_FragCoord.xy*1.7 + fract(uTime)) - 0.5)*0.06; // heavy grain
+      col *= 1.0 - dot(uv, uv)*0.55;                 // strong vignette
     } else if(L == 3){               // VHS — retro tape
       col *= 0.88 + 0.12*sin(gl_FragCoord.y*2.0);   // scanlines
       float s = 0.012 + 0.01*sin(uTime*3.0);
@@ -678,10 +685,10 @@
   void main(){
     vec2 uv = (gl_FragCoord.xy - 0.5*uRes) / uRes.y;
 
-    // camera kick on beat
-    float kick = 1.0 - uWarp*0.12;
+    // camera kick / punch-in on beat
+    float kick = 1.0 - uWarp*0.20;
     uv *= kick;
-    uv += 0.006 * uWarp * vec2(sin(uTime*40.0), cos(uTime*37.0));
+    uv += 0.010 * uWarp * vec2(sin(uTime*40.0), cos(uTime*37.0));
 
     vec3 col = renderScene(int(uScene + 0.5), uv);
     if(uTrans > 0.001){
@@ -694,7 +701,7 @@
     // ---- post ----
     col *= (0.55 + uIntensity*0.9);
     col += col*col*0.5*uIntensity;                 // cheap bloom lift
-    col += vec3(1.0)*uBeat*0.05;                    // beat brightening
+    col += col*uBeat*0.35;                          // beat brightening (punchy)
 
     // vignette
     float vig = 1.0 - dot(uv,uv)*0.35;
@@ -823,19 +830,21 @@
       this.resize();
       gl.uniform2f(u.uRes, this.canvas.width, this.canvas.height);
       gl.uniform1f(u.uTime, t);
-      gl.uniform1f(u.uBass, audio.bass);
-      gl.uniform1f(u.uMid, audio.mid);
-      gl.uniform1f(u.uTreble, audio.treble);
-      gl.uniform1f(u.uLevel, audio.level);
+      // Global reactivity boost so scenes move hard with the music.
+      const R = 1.45, m1 = (v, k) => Math.min(1, v * k);
+      gl.uniform1f(u.uBass, m1(audio.bass, R));
+      gl.uniform1f(u.uMid, m1(audio.mid, R));
+      gl.uniform1f(u.uTreble, m1(audio.treble, R + 0.15));
+      gl.uniform1f(u.uLevel, m1(audio.level, R - 0.05));
       const kick = p.beatKick == null ? 1 : p.beatKick;
-      gl.uniform1f(u.uBeat, audio.beat * (0.5 + 0.5 * Math.min(1, kick)));
+      gl.uniform1f(u.uBeat, Math.min(1.2, audio.beat * (0.6 + 0.6 * Math.min(1, kick))));
       gl.uniform1f(u.uHue, p.hue);
       gl.uniform1f(u.uSat, p.saturation);
       gl.uniform1f(u.uIntensity, p.intensity);
       gl.uniform1f(u.uScene, p.scene);
       gl.uniform1f(u.uSceneNext, p.sceneNext);
       gl.uniform1f(u.uTrans, p.transition);
-      gl.uniform1f(u.uWarp, audio.beat * kick);
+      gl.uniform1f(u.uWarp, Math.min(1.4, audio.beat * kick * 1.3));
       gl.uniform1f(u.uLook, p.look == null ? 0 : p.look);
       // Upload the current spectrum + waveform for data-driven scenes.
       gl.activeTexture(gl.TEXTURE0);

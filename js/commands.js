@@ -106,6 +106,10 @@
       p: { scene: 9, hue: 0.6, saturation: 0.2, intensity: 0.55, look: 1, cutSpeed: 12, beatKick: 0.7 } },
     { name: 'Zen',             keys: ['zen', 'calm theme', 'meditation', 'spa'],
       p: { scene: 15, hue: 0.4, saturation: 0.6, intensity: 0.4, cutSpeed: 18, beatKick: 0.3, transDur: 2.2 } },
+    { name: 'Old Film',        keys: ['old film', 'vintage theme', 'silent film', 'sepia film'],
+      p: { scene: 1, hue: 0.08, saturation: 0.55, intensity: 0.6, look: 2, cutSpeed: 11, beatKick: 0.7, transDur: 1.6 } },
+    { name: 'Super 8',         keys: ['super 8', 'home movie', '8mm', 'retro film'],
+      p: { scene: 5, hue: 0.07, saturation: 0.7, intensity: 0.6, look: 2, cutSpeed: 10, beatKick: 0.8 } },
   ];
 
   /* ---- Art styles: recognizable painting / movement looks ---- */
