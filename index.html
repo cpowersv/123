@@ -12,13 +12,14 @@
     --amber:   #FFC24B;
     --amber-2: #F5A623;
     --violet:  #9B7DFF;
+    --on-amber:#241704;
     --line:    rgba(255,255,255,0.09);
     --line-2:  rgba(255,255,255,0.05);
     --glow:    rgba(255,194,75,0.28);
     --card-sh: 0 30px 80px -30px rgba(0,0,0,0.7);
     --grad:    linear-gradient(135deg, var(--amber), var(--amber-2));
 
-    --font-display: 'Helvetica Neue', 'Arial Black', Arial, sans-serif;
+    --font-display: -apple-system, 'Segoe UI', system-ui, Roboto, Arial, sans-serif;
     --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
     --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', Menlo, monospace;
 
@@ -27,30 +28,21 @@
 
   @media (prefers-color-scheme: light) {
     :root {
-      --bg:      #F3F0F7;
-      --bg-2:    #FFFFFF;
-      --bg-3:    #ECE6F6;
-      --text:    #1B1126;
-      --muted:   #6A5E7C;
-      --amber:   #C7790A;
-      --amber-2: #A9640A;
-      --violet:  #6B4DE6;
-      --line:    rgba(24,12,38,0.12);
-      --line-2:  rgba(24,12,38,0.06);
-      --glow:    rgba(255,178,60,0.35);
-      --card-sh: 0 24px 60px -28px rgba(50,30,80,0.35);
+      --bg:#F3F0F7; --bg-2:#FFFFFF; --bg-3:#ECE6F6; --text:#1B1126; --muted:#5F5372;
+      --amber:#C7790A; --amber-2:#A9640A; --violet:#6B4DE6; --on-amber:#FFFFFF;
+      --line:rgba(24,12,38,0.12); --line-2:rgba(24,12,38,0.06);
+      --glow:rgba(255,178,60,0.35); --card-sh:0 24px 60px -28px rgba(50,30,80,0.35);
     }
   }
-  /* explicit toggle wins in both directions */
   :root[data-theme="dark"] {
     --bg:#16101F; --bg-2:#1E1630; --bg-3:#271C3D; --text:#F3EEF7; --muted:#A99CBB;
-    --amber:#FFC24B; --amber-2:#F5A623; --violet:#9B7DFF;
+    --amber:#FFC24B; --amber-2:#F5A623; --violet:#9B7DFF; --on-amber:#241704;
     --line:rgba(255,255,255,0.09); --line-2:rgba(255,255,255,0.05);
     --glow:rgba(255,194,75,0.28); --card-sh:0 30px 80px -30px rgba(0,0,0,0.7);
   }
   :root[data-theme="light"] {
-    --bg:#F3F0F7; --bg-2:#FFFFFF; --bg-3:#ECE6F6; --text:#1B1126; --muted:#6A5E7C;
-    --amber:#C7790A; --amber-2:#A9640A; --violet:#6B4DE6;
+    --bg:#F3F0F7; --bg-2:#FFFFFF; --bg-3:#ECE6F6; --text:#1B1126; --muted:#5F5372;
+    --amber:#C7790A; --amber-2:#A9640A; --violet:#6B4DE6; --on-amber:#FFFFFF;
     --line:rgba(24,12,38,0.12); --line-2:rgba(24,12,38,0.06);
     --glow:rgba(255,178,60,0.35); --card-sh:0 24px 60px -28px rgba(50,30,80,0.35);
   }
@@ -58,19 +50,16 @@
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-body);
-    line-height: 1.55;
-    -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--font-body); line-height: 1.55;
+    -webkit-font-smoothing: antialiased; overflow-x: hidden;
   }
   a { color: inherit; }
+  .vh { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; border-radius: 10px; }
 
   .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
 
-  /* ambient stage glow */
   .stagelight {
     position: fixed; inset: 0; z-index: 0; pointer-events: none;
     background:
@@ -79,58 +68,34 @@
   }
   main, header, footer { position: relative; z-index: 1; }
 
-  /* ---------- nav ---------- */
-  .nav {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 22px 0 8px;
-  }
+  /* nav */
+  .nav { display: flex; align-items: center; justify-content: space-between; padding: 22px 0 8px; }
   .brand { display: flex; align-items: center; gap: 11px; font-family: var(--font-display); font-weight: 800; letter-spacing: -0.02em; font-size: 21px; }
-  .mark {
-    width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center;
-    background: var(--grad);
-    box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 6px 20px -6px var(--glow);
-  }
+  .mark { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: var(--grad); box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 6px 20px -6px var(--glow); }
   .mark svg { display: block; }
   .brand .dom { color: var(--muted); font-weight: 500; font-family: var(--font-mono); font-size: 13px; letter-spacing: 0; }
   .nav-actions { display: flex; align-items: center; gap: 18px; }
   .nav-link { color: var(--muted); text-decoration: none; font-size: 14.5px; font-weight: 500; }
   .nav-link:hover { color: var(--text); }
-  .theme-btn {
-    background: transparent; border: 1px solid var(--line); color: var(--muted);
-    border-radius: 999px; width: 34px; height: 34px; cursor: pointer; font-size: 15px;
-    display: grid; place-items: center;
-  }
+  .theme-btn { background: transparent; border: 1px solid var(--line); color: var(--muted); border-radius: 999px; width: 34px; height: 34px; cursor: pointer; font-size: 15px; display: grid; place-items: center; }
   .theme-btn:hover { color: var(--text); border-color: var(--amber); }
   @media (max-width: 620px) { .nav-link.hide-sm { display: none; } }
 
-  /* ---------- hero ---------- */
-  .hero { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 54px; align-items: center; padding: 40px 0 30px; }
+  /* hero */
+  .hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 54px; align-items: center; padding: 40px 0 30px; }
   @media (max-width: 900px) { .hero { grid-template-columns: 1fr; gap: 34px; padding-top: 26px; } }
 
-  .eyebrow {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--amber); border: 1px solid var(--line); background: var(--bg-2);
-    padding: 6px 12px; border-radius: 999px; margin-bottom: 22px;
-  }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--amber); border: 1px solid var(--line); background: var(--bg-2); padding: 6px 12px; border-radius: 999px; margin-bottom: 22px; }
   .eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 3px var(--glow); }
 
-  h1 {
-    font-family: var(--font-display); font-weight: 800;
-    font-size: clamp(2.6rem, 6.2vw, 4.4rem); line-height: 0.98; letter-spacing: -0.035em;
-    margin: 0 0 20px; text-wrap: balance;
-  }
-  h1 .hl { color: var(--amber); }
-  .lede { font-size: clamp(1.05rem, 1.7vw, 1.28rem); color: var(--muted); max-width: 34ch; margin: 0 0 30px; }
+  h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(2.6rem, 6.2vw, 4.4rem); line-height: 1.02; letter-spacing: -0.035em; margin: 0 0 22px; text-wrap: balance; }
+  h1 .hl { color: var(--amber); background: linear-gradient(transparent 76%, var(--glow) 0); padding: 0 0.04em; }
+  .lede { font-size: clamp(1.06rem, 1.7vw, 1.3rem); line-height: 1.5; color: var(--muted); max-width: 40ch; margin: 0 0 30px; }
 
   .cta-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
-  .btn {
-    font-family: var(--font-body); font-weight: 700; font-size: 15.5px;
-    padding: 14px 24px; border-radius: 12px; border: 1px solid transparent;
-    cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 10px;
-    transition: transform .12s ease, box-shadow .2s ease, background .2s ease;
-  }
-  .btn-primary { background: var(--grad); color: #241704; box-shadow: 0 14px 34px -12px var(--glow); }
+  .btn { font-family: var(--font-body); font-weight: 700; font-size: 15.5px; padding: 14px 24px; border-radius: 12px; border: 1px solid transparent; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; transition: transform .12s ease, box-shadow .2s ease, background .2s ease; }
+  .btn-primary { background: var(--grad); color: var(--on-amber); box-shadow: 0 14px 34px -12px var(--glow); }
+  .btn-primary svg path { stroke: var(--on-amber); }
   .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 20px 44px -12px var(--glow); }
   .btn-ghost { background: var(--bg-2); border-color: var(--line); color: var(--text); }
   .btn-ghost:hover { border-color: var(--amber); }
@@ -140,143 +105,105 @@
   .trust .n { font-family: var(--font-mono); font-weight: 700; font-size: 1.5rem; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
   .trust .l { color: var(--muted); font-size: 13px; }
 
-  /* ---------- now playing card ---------- */
-  .np {
-    background: linear-gradient(180deg, var(--bg-2), var(--bg-3));
-    border: 1px solid var(--line); border-radius: 22px; padding: 22px;
-    box-shadow: var(--card-sh);
-  }
+  /* now playing card */
+  .np { background: linear-gradient(180deg, var(--bg-2), var(--bg-3)); border: 1px solid var(--line); border-radius: 22px; padding: 22px; box-shadow: var(--card-sh); position: relative; }
+  .np.flash { animation: flash 1s ease; }
+  @keyframes flash { 0%,100% { box-shadow: var(--card-sh); } 28% { box-shadow: 0 0 0 3px var(--amber), var(--card-sh); } }
   .np-head { display: flex; align-items: center; gap: 14px; }
-  .cover {
-    width: 60px; height: 60px; border-radius: 13px; flex: none; position: relative; overflow: hidden;
-    background: radial-gradient(circle at 30% 25%, var(--violet), transparent 60%), linear-gradient(135deg, #3a2668, #120b1f);
-  }
-  .cover::after { content: "♪"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 26px; color: rgba(255,255,255,0.85); }
+  .cover { width: 60px; height: 60px; border-radius: 13px; flex: none; position: relative; overflow: hidden; background: radial-gradient(circle at 30% 25%, var(--wave-b, var(--violet)), transparent 60%), linear-gradient(135deg, var(--wave-a, #3a2668), #120b1f); transition: background .5s ease; }
+  .cover::after { content: "♪"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 26px; color: rgba(255,255,255,0.9); }
   .np-meta { flex: 1; min-width: 0; }
-  .np-track { font-family: var(--font-display); font-weight: 800; font-size: 1.12rem; letter-spacing: -0.01em; }
+  .np-track { font-family: var(--font-display); font-weight: 700; font-size: 1.12rem; letter-spacing: -0.015em; }
   .np-artist { color: var(--muted); font-size: 13.5px; }
   .np-live { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); display: inline-flex; align-items: center; gap: 6px; margin-top: 3px; }
   .np-live .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); animation: pulse 0.5s ease-in-out infinite; }
   @keyframes pulse { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 var(--glow); } 50% { opacity: .55; box-shadow: 0 0 0 6px transparent; } }
 
-  /* --- scene visualizer --- */
-  .np {
-    --wave-a: var(--amber);
-    --wave-b: var(--violet);
-    --scene-wash: radial-gradient(120% 90% at 50% 120%, var(--glow), transparent 70%);
-  }
-  .np[data-scene="galaxy"] {
-    --wave-a: #8db4ff; --wave-b: #c68bff;
-    --scene-wash: radial-gradient(90% 120% at 20% 130%, rgba(120,90,255,0.35), transparent 65%),
-                  radial-gradient(80% 120% at 85% 120%, rgba(80,160,255,0.28), transparent 60%);
-  }
-  .np[data-scene="ocean"] {
-    --wave-a: #38e0d4; --wave-b: #3a86d8;
-    --scene-wash: radial-gradient(120% 130% at 50% 130%, rgba(56,200,210,0.30), transparent 62%),
-                  linear-gradient(180deg, transparent, rgba(30,90,140,0.18));
-  }
+  /* scene visualizer */
+  .np { --wave-a: var(--amber); --wave-b: var(--violet); --scene-wash: radial-gradient(120% 90% at 50% 120%, var(--glow), transparent 70%); }
+  .np[data-scene="galaxy"] { --wave-a: #8db4ff; --wave-b: #c68bff; --scene-wash: radial-gradient(90% 120% at 20% 130%, rgba(120,90,255,0.35), transparent 65%), radial-gradient(80% 120% at 85% 120%, rgba(80,160,255,0.28), transparent 60%); }
+  .np[data-scene="ocean"] { --wave-a: #38e0d4; --wave-b: #3a86d8; --scene-wash: radial-gradient(120% 130% at 50% 130%, rgba(56,200,210,0.30), transparent 62%), linear-gradient(180deg, transparent, rgba(30,90,140,0.18)); }
 
   .scene-row { display: flex; gap: 7px; margin: 16px 0 0; }
-  .scene-chip {
-    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
-    padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg);
-    color: var(--muted); cursor: pointer; transition: border-color .15s ease, color .15s ease;
-  }
+  .scene-chip { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); color: var(--muted); cursor: pointer; transition: border-color .15s ease, color .15s ease; }
   .scene-chip:hover { color: var(--text); }
   .scene-chip.on { border-color: var(--wave-a); color: var(--text); box-shadow: inset 0 0 0 1px var(--wave-a); }
 
-  .np-stage { position: relative; margin: 12px 0 8px; border-radius: 14px; overflow: hidden; }
+  .np-stage { position: relative; margin: 12px 0 6px; border-radius: 14px; overflow: hidden; }
   .np-stage::before { content: ""; position: absolute; inset: 0; background: var(--scene-wash); transition: background .5s ease; }
-  canvas.wave { display: block; position: relative; width: 100%; height: 96px; }
+  canvas.wave { display: block; position: relative; width: 100%; height: 126px; }
+  .np-progress { height: 3px; border-radius: 2px; background: var(--line); overflow: hidden; margin: 0 0 8px; }
+  .np-progress i { display: block; height: 100%; width: 35%; background: var(--grad); transition: width 1s linear; }
 
   .np-times { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 
-  .tip-block { margin-top: 18px; border-top: 1px solid var(--line-2); padding-top: 18px; }
+  .pop { position: absolute; right: 16px; top: 78px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; font-size: 12px; font-weight: 600; pointer-events: none; opacity: 0; z-index: 6; box-shadow: var(--card-sh); }
+  .pop .amt { color: var(--amber); }
+  .pop.show { animation: popup 2.2s ease forwards; }
+  @keyframes popup { 0% { opacity: 0; transform: translateY(10px); } 14% { opacity: 1; transform: translateY(0); } 78% { opacity: 1; } 100% { opacity: 0; transform: translateY(-16px); } }
+
+  .tip-block { margin-top: 16px; border-top: 1px solid var(--line-2); padding-top: 18px; }
   .tip-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
   .tip-label span:first-child { font-weight: 700; font-size: 14.5px; }
-  .raised { font-family: var(--font-mono); color: var(--amber); font-weight: 700; font-variant-numeric: tabular-nums; font-size: 14px; }
+  .raised { font-family: var(--font-mono); color: var(--amber); font-weight: 700; font-variant-numeric: tabular-nums; font-size: 14px; display: inline-block; }
+  .raised.bump { animation: bump .4s ease; }
+  @keyframes bump { 0%,100% { transform: none; } 30% { transform: scale(1.28); } }
 
   .chips { display: flex; gap: 9px; margin-bottom: 13px; }
-  .chip {
-    flex: 1; text-align: center; font-family: var(--font-mono); font-weight: 700; font-size: 15px;
-    padding: 11px 0; border-radius: 11px; border: 1px solid var(--line); background: var(--bg);
-    color: var(--text); cursor: pointer; font-variant-numeric: tabular-nums;
-    transition: border-color .15s ease, background .15s ease, transform .1s ease;
-  }
+  .chip { flex: 1; text-align: center; font-family: var(--font-mono); font-weight: 700; font-size: 15px; padding: 11px 0; border-radius: 11px; border: 1px solid var(--line); background: var(--bg); color: var(--text); cursor: pointer; font-variant-numeric: tabular-nums; transition: border-color .15s ease, background .15s ease, color .15s ease, transform .1s ease; }
   .chip:hover { border-color: var(--amber); }
-  .chip.on { border-color: var(--amber); background: var(--glow); color: var(--text); box-shadow: inset 0 0 0 1px var(--amber); }
+  .chip.on { border-color: var(--amber); background: var(--amber); color: var(--on-amber); }
 
-  .tip-btn {
-    position: relative; width: 100%; justify-content: center; font-size: 16px; padding: 15px;
-    overflow: visible;
-  }
-  .toast {
-    position: absolute; left: 50%; top: -6px; transform: translate(-50%, -100%);
-    background: var(--bg-2); border: 1px solid var(--amber); color: var(--text);
-    font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 10px; white-space: nowrap;
-    opacity: 0; pointer-events: none; transition: opacity .25s ease, transform .25s ease;
-    box-shadow: var(--card-sh);
-  }
+  .tip-btn { position: relative; width: 100%; justify-content: center; font-size: 16px; padding: 15px; overflow: visible; }
+  .tip-btn.ok { background: linear-gradient(135deg, #34d17e, #1fa866); color: #05240f; }
+  .toast { position: absolute; left: 50%; top: -6px; transform: translate(-50%, -100%); background: var(--bg-2); border: 1px solid var(--amber); color: var(--text); font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 10px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .25s ease, transform .25s ease; box-shadow: var(--card-sh); }
   .toast.show { opacity: 1; transform: translate(-50%, -115%); }
 
-  .coin {
-    position: absolute; width: 22px; height: 22px; border-radius: 50%; pointer-events: none; z-index: 5;
-    background: radial-gradient(circle at 34% 30%, #ffe6a3, var(--amber) 55%, var(--amber-2));
-    box-shadow: 0 2px 8px -1px var(--glow); display: grid; place-items: center;
-    font-size: 12px; font-weight: 800; color: #6b4400; font-family: var(--font-mono);
-  }
+  .coin { position: absolute; width: 22px; height: 22px; border-radius: 50%; pointer-events: none; z-index: 5; background: radial-gradient(circle at 34% 30%, #ffe6a3, #FFC24B 55%, #F5A623); box-shadow: 0 2px 8px -1px var(--glow); display: grid; place-items: center; font-size: 12px; font-weight: 800; color: #6b4400; font-family: var(--font-mono); }
 
-  /* ---------- section shell ---------- */
+  /* sections */
   section.band { padding: 76px 0; }
   .kicker { font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--violet); margin-bottom: 14px; }
-  h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.9rem, 3.6vw, 2.8rem); letter-spacing: -0.03em; line-height: 1.02; margin: 0 0 16px; text-wrap: balance; }
-  .sec-intro { color: var(--muted); max-width: 52ch; font-size: 1.05rem; }
+  .kicker.amber { color: var(--amber); }
+  h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.9rem, 3.6vw, 2.8rem); letter-spacing: -0.03em; line-height: 1.04; margin: 0 0 16px; text-wrap: balance; }
+  .sec-intro { color: var(--muted); max-width: 52ch; font-size: 1.06rem; line-height: 1.5; }
 
-  /* how it works — a real sequence */
   .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 44px; }
   @media (max-width: 780px) { .steps { grid-template-columns: 1fr; } }
   .step { background: var(--bg-2); border: 1px solid var(--line); border-radius: 18px; padding: 26px; position: relative; }
   .step .num { font-family: var(--font-mono); font-weight: 700; font-size: 13px; color: var(--amber); letter-spacing: 0.1em; }
-  .step h3 { font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; letter-spacing: -0.02em; margin: 12px 0 8px; }
+  .step h3 { font-family: var(--font-display); font-weight: 700; font-size: 1.28rem; letter-spacing: -0.015em; margin: 12px 0 8px; }
   .step p { color: var(--muted); margin: 0; font-size: 15px; }
 
   /* broadcast / share */
-  .broadcast {
-    background:
-      radial-gradient(70% 120% at 50% 0%, rgba(255,194,75,0.12), transparent 60%),
-      linear-gradient(180deg, var(--bg-2), var(--bg-3));
-    border: 1px solid var(--line); border-radius: 24px; padding: 48px 40px; text-align: center;
-    box-shadow: var(--card-sh);
-  }
+  .broadcast { background: radial-gradient(70% 120% at 50% 0%, rgba(255,194,75,0.12), transparent 60%), linear-gradient(180deg, var(--bg-2), var(--bg-3)); border: 1px solid var(--line); border-radius: 24px; padding: 48px 40px; text-align: center; box-shadow: var(--card-sh); }
   @media (max-width: 620px) { .broadcast { padding: 36px 22px; } }
   .broadcast h2 { margin-bottom: 12px; }
-  .broadcast p { color: var(--muted); max-width: 44ch; margin: 0 auto 28px; }
-  .link-pill {
-    display: inline-flex; align-items: center; gap: 12px; background: var(--bg); border: 1px solid var(--line);
-    border-radius: 999px; padding: 8px 8px 8px 20px; margin-bottom: 26px; max-width: 100%;
-  }
+  .broadcast p { color: var(--muted); max-width: 46ch; margin: 0 auto 28px; line-height: 1.5; }
+  .link-pill { display: inline-flex; align-items: center; gap: 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 8px 8px 8px 20px; margin-bottom: 26px; max-width: 100%; }
   .link-pill .url { font-family: var(--font-mono); font-size: 15px; color: var(--text); }
-  .copy-btn { background: var(--grad); color: #241704; border: none; font-weight: 700; padding: 9px 18px; border-radius: 999px; cursor: pointer; font-family: var(--font-body); font-size: 14px; }
+  .copy-btn { background: var(--grad); color: var(--on-amber); border: none; font-weight: 700; padding: 9px 18px; border-radius: 999px; cursor: pointer; font-family: var(--font-body); font-size: 14px; }
   .copy-btn:hover { filter: brightness(1.05); }
-
   .share-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
-  .share-btn {
-    display: inline-flex; align-items: center; gap: 9px; text-decoration: none;
-    background: var(--bg); border: 1px solid var(--line); color: var(--text);
-    padding: 11px 18px; border-radius: 12px; font-size: 14.5px; font-weight: 600;
-    transition: border-color .15s ease, transform .1s ease;
-  }
+  .share-btn { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; background: var(--bg); border: 1px solid var(--line); color: var(--text); padding: 11px 18px; border-radius: 12px; font-size: 14.5px; font-weight: 600; transition: border-color .15s ease, transform .1s ease; }
   .share-btn:hover { border-color: var(--amber); transform: translateY(-1px); }
   .share-btn svg { display: block; }
 
-  /* footer */
-  footer { border-top: 1px solid var(--line); padding: 34px 0 48px; margin-top: 40px; }
+  /* closer */
+  .closer { text-align: center; padding-top: 20px; }
+  .closer h2 { margin-bottom: 10px; }
+  .closer p { color: var(--muted); margin: 0 0 24px; }
+  .closer .live-dot { color: var(--amber); font-weight: 700; }
+
+  footer { border-top: 1px solid var(--line); padding: 34px 0 48px; margin-top: 24px; }
   .foot { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; color: var(--muted); font-size: 13.5px; }
   .foot a { text-decoration: none; }
   .foot a:hover { color: var(--text); }
+  .brand.sm { font-size: 17px; }
+  .brand.sm .mark { width: 24px; height: 24px; border-radius: 7px; }
 
   @media (prefers-reduced-motion: reduce) {
-    * { animation: none !important; scroll-behavior: auto !important; }
+    * { animation: none !important; scroll-behavior: auto !important; transition: none !important; }
     .btn-primary:hover, .share-btn:hover { transform: none; }
   }
 </style>
@@ -287,16 +214,14 @@
   <nav class="nav">
     <div class="brand">
       <span class="mark" aria-hidden="true">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M1 8h2l1.5-5 2 11 2-9 1.5 5H15" stroke="#241704" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 8h2l1.5-5 2 11 2-9 1.5 5H15" stroke="#241704" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </span>
       Audivue<span class="dom">.io</span>
     </div>
     <div class="nav-actions">
       <a class="nav-link hide-sm" href="#how">How it works</a>
       <a class="nav-link" href="#broadcast">Share</a>
-      <button class="theme-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle light/dark theme">◐</button>
+      <button class="theme-btn" id="themeBtn" type="button" title="Toggle theme" aria-label="Toggle light or dark theme">◐</button>
     </div>
   </nav>
 </header>
@@ -309,20 +234,21 @@
       <h1>Tip the artist,<br><span class="hl">not the algorithm.</span></h1>
       <p class="lede">Audivue turns listening into support. Drop a tip the second a song hits — it lands in the artist's pocket, not a middleman's.</p>
       <div class="cta-row">
-        <a class="btn btn-primary" href="#broadcast">Broadcast Audivue
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h11M9 4l4 4-4 4" stroke="#241704" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <a class="btn btn-primary" id="tryBtn" href="#npCard">Try a live tip
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h11M9 4l4 4-4 4" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
-        <a class="btn btn-ghost" href="#how">See how it works</a>
+        <a class="btn btn-ghost" href="#broadcast">For artists — broadcast</a>
       </div>
       <div class="trust">
-        <div class="stat"><span class="n" id="statA">$0</span><span class="l">avg. artist payout / set</span></div>
-        <div class="stat"><span class="n">0%</span><span class="l">cut on tips over $5</span></div>
-        <div class="stat"><span class="n">&lt;2s</span><span class="l">from tap to artist</span></div>
+        <div class="stat"><span class="n" id="statA">$0</span><span class="l">avg. payout / set</span></div>
+        <div class="stat"><span class="n">&lt;2s</span><span class="l">tap → artist</span></div>
+        <div class="stat"><span class="n">0%</span><span class="l">platform fee*</span></div>
       </div>
     </div>
 
     <!-- interactive now-playing / tip demo -->
     <div class="np" id="npCard" data-scene="studio">
+      <div class="pop" id="pop" aria-hidden="true"></div>
       <div class="np-head">
         <div class="cover" aria-hidden="true"></div>
         <div class="np-meta">
@@ -333,14 +259,15 @@
       </div>
 
       <div class="scene-row" id="scenes" role="group" aria-label="Choose a visualizer scene">
-        <button class="scene-chip on" data-scene="studio">Studio</button>
-        <button class="scene-chip" data-scene="galaxy">Galaxy</button>
-        <button class="scene-chip" data-scene="ocean">Ocean</button>
+        <button class="scene-chip on" type="button" data-scene="studio" aria-pressed="true">Studio</button>
+        <button class="scene-chip" type="button" data-scene="galaxy" aria-pressed="false">Galaxy</button>
+        <button class="scene-chip" type="button" data-scene="ocean" aria-pressed="false">Ocean</button>
       </div>
 
       <div class="np-stage">
         <canvas class="wave" id="wave" aria-hidden="true"></canvas>
       </div>
+      <div class="np-progress" aria-hidden="true"><i id="prog"></i></div>
       <div class="np-times"><span id="tElapsed">1:24</span><span>3:57</span></div>
 
       <div class="tip-block">
@@ -349,19 +276,20 @@
           <span class="raised">$<span id="raised">248</span> tonight</span>
         </div>
         <div class="chips" id="chips" role="group" aria-label="Choose a tip amount">
-          <button class="chip" data-amt="2">$2</button>
-          <button class="chip on" data-amt="5">$5</button>
-          <button class="chip" data-amt="10">$10</button>
+          <button class="chip" type="button" data-amt="2" aria-pressed="false">$2</button>
+          <button class="chip on" type="button" data-amt="5" aria-pressed="true">$5</button>
+          <button class="chip" type="button" data-amt="10" aria-pressed="false">$10</button>
         </div>
-        <button class="btn btn-primary tip-btn" id="tipBtn">
-          <span class="toast" id="toast">Sent to Lena 💛</span>
-          Send <span id="tipAmt">$5</span> tip
+        <button class="btn btn-primary tip-btn" id="tipBtn" type="button">
+          <span class="toast" id="toast" aria-hidden="true">Sent 💛</span>
+          <span id="tipLabel">Send $5 tip</span>
         </button>
+        <span class="vh" id="live" aria-live="polite"></span>
       </div>
     </div>
   </section>
 
-  <!-- WHY / HOW -->
+  <!-- HOW IT WORKS -->
   <section class="band" id="how">
     <p class="kicker">How it works</p>
     <h2>Tip in the moment.<br>The artist's paid in seconds.</h2>
@@ -375,7 +303,7 @@
       <article class="step">
         <span class="num">02</span>
         <h3>Keep what you earn</h3>
-        <p>0% platform cut on tips over $5. What a fan sends is what lands — transparently, every time.</p>
+        <p>0% platform fee on tips over $5. What a fan sends is what lands — transparently, every time.</p>
       </article>
       <article class="step">
         <span class="num">03</span>
@@ -388,13 +316,13 @@
   <!-- BROADCAST / SHARE -->
   <section class="band" id="broadcast">
     <div class="broadcast">
-      <p class="kicker" style="color:var(--amber)">Put it on air</p>
+      <p class="kicker amber">Put it on air</p>
       <h2>Broadcast Audivue to your crowd.</h2>
-      <p>Share the link anywhere your fans already are. One tap and they're tipping — no app store detour.</p>
+      <p>Drop the link in your stream description, story, or set list. One tap and fans are tipping — no app-store detour.</p>
 
       <div class="link-pill">
         <span class="url" id="shareUrl">audivue.io</span>
-        <button class="copy-btn" id="copyBtn">Copy link</button>
+        <button class="copy-btn" id="copyBtn" type="button">Copy link</button>
       </div>
 
       <div class="share-row">
@@ -413,223 +341,280 @@
       </div>
     </div>
   </section>
+
+  <!-- CLOSER -->
+  <section class="band closer">
+    <h2>The tip jar — but it's playing your song.</h2>
+    <p>Lena's set is live now — <span class="live-dot" id="room">47</span> fans in the room.</p>
+    <a class="btn btn-primary" href="#npCard" id="closeBtn">Send your first tip
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h11M9 4l4 4-4 4" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </section>
 </main>
 
 <footer>
   <div class="wrap foot">
-    <div class="brand" style="font-size:17px">
-      <span class="mark" aria-hidden="true" style="width:24px;height:24px;border-radius:7px">
+    <div class="brand sm">
+      <span class="mark" aria-hidden="true">
         <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M1 8h2l1.5-5 2 11 2-9 1.5 5H15" stroke="#241704" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </span>
       Audivue<span class="dom">.io</span>
     </div>
-    <div>Support the sound. © <span id="yr"></span> Audivue.</div>
+    <div>Support the sound. © <span id="yr"></span> Audivue · *0% platform fee on tips over $5.</div>
   </div>
 </footer>
 
 <script>
 (function () {
   var root = document.documentElement;
-
-  /* ---- theme toggle ---- */
-  var tb = document.getElementById('themeBtn');
-  tb.addEventListener('click', function () {
-    var cur = root.getAttribute('data-theme');
-    if (!cur) {
-      cur = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    root.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
-  });
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var e = encodeURIComponent;
 
   document.getElementById('yr').textContent = new Date().getFullYear();
 
+  /* ---- theme toggle ---- */
+  var tb = document.getElementById('themeBtn');
+  function currentTheme() { return root.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); }
+  tb.addEventListener('click', function () {
+    var next = currentTheme() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    tb.setAttribute('aria-pressed', next === 'dark' ? 'true' : 'false');
+    readColors();
+    if (reduce) drawStatic();
+  });
+
   /* ---- share links ---- */
   var url = 'https://audivue.io';
-  var text = 'Tip the artist, not the algorithm. Support your favorite artists in the moment on Audivue 🎵';
-  var e = encodeURIComponent;
+  var text = 'Tip the artist, not the algorithm — support your favorite artists in the moment on Audivue 🎵';
   document.getElementById('shX').href = 'https://twitter.com/intent/tweet?text=' + e(text) + '&url=' + e(url);
   document.getElementById('shWa').href = 'https://wa.me/?text=' + e(text + ' ' + url);
   document.getElementById('shMail').href = 'mailto:?subject=' + e('Check out Audivue') + '&body=' + e(text + '\n\n' + url);
 
+  /* ---- copy with real fallback ---- */
   var copyBtn = document.getElementById('copyBtn');
   copyBtn.addEventListener('click', function () {
-    var done = function () { copyBtn.textContent = 'Copied ✓'; setTimeout(function(){ copyBtn.textContent = 'Copy link'; }, 1600); };
-    if (navigator.clipboard) { navigator.clipboard.writeText(url).then(done, done); } else { done(); }
+    function ok() { copyBtn.textContent = 'Copied ✓'; setTimeout(function () { copyBtn.textContent = 'Copy link'; }, 1600); }
+    function fail() { copyBtn.textContent = 'Press ⌘/Ctrl-C'; setTimeout(function () { copyBtn.textContent = 'Copy link'; }, 1900); }
+    function legacy() {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = url; ta.setAttribute('readonly', '');
+        ta.style.position = 'absolute'; ta.style.left = '-9999px';
+        document.body.appendChild(ta); ta.select();
+        var done = document.execCommand('copy');
+        document.body.removeChild(ta);
+        done ? ok() : fail();
+      } catch (_) { fail(); }
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(ok, legacy);
+    else legacy();
   });
 
-  /* ---- stat count-up ---- */
+  /* ---- stat count-up (reduced-motion shows final value) ---- */
   var statA = document.getElementById('statA');
-  var target = 412, cur = 0;
-  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduce) { statA.textContent = '$' + target; }
+  if (reduce) { statA.textContent = '$412'; }
   else {
-    var iv = setInterval(function () {
-      cur += Math.ceil((target - cur) / 8);
-      if (cur >= target) { cur = target; clearInterval(iv); }
+    var cur = 0, iv = setInterval(function () {
+      cur += Math.ceil((412 - cur) / 8);
+      if (cur >= 412) { cur = 412; clearInterval(iv); }
       statA.textContent = '$' + cur;
     }, 45);
   }
 
   /* ---- waveform + scene visualizer ---- */
-  var cv = document.getElementById('wave');
-  var ctx = cv.getContext('2d');
+  var cv = document.getElementById('wave'), ctx = cv.getContext('2d');
   var npCard = document.getElementById('npCard');
-  var dpr = Math.min(window.devicePixelRatio || 1, 2);
-  var W, H, bars = 46, scene = 'studio';
-  var BPM = 120, beatSec = 60 / BPM, startT = performance.now();
+  var W, H, dpr, bars = 44, scene = 'studio';
+  var BPM = 120, beatSec = 60 / BPM, startT = performance.now(), lastT = startT;
+  var colA = '#FFC24B', colB = '#9B7DFF', grad = null;
+  var seeds = [], heights = [], stars = [];
+  for (var i = 0; i < bars; i++) { seeds.push(Math.random() * 6.283); heights.push(0); }
+  for (var s = 0; s < 46; s++) stars.push({ x: Math.random(), y: Math.random(), r: Math.random() * 1.3 + 0.3, tw: Math.random() * 6.283, sp: 0.02 + Math.random() * 0.05 });
 
-  function cardCss(v) { return getComputedStyle(npCard).getPropertyValue(v).trim(); }
-  function waveColors() { return [cardCss('--wave-a') || '#FFC24B', cardCss('--wave-b') || '#9B7DFF']; }
+  function readColors() {
+    var cs = getComputedStyle(npCard);
+    colA = (cs.getPropertyValue('--wave-a') || '').trim() || '#FFC24B';
+    colB = (cs.getPropertyValue('--wave-b') || '').trim() || '#9B7DFF';
+    buildGrad();
+  }
+  function buildGrad() { if (!H) return; grad = ctx.createLinearGradient(0, 0, 0, H); grad.addColorStop(0, colA); grad.addColorStop(1, colB); }
   function size() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
     W = cv.clientWidth; H = cv.clientHeight;
     cv.width = W * dpr; cv.height = H * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    buildGrad();
     if (reduce) drawStatic();
   }
+  function envAt(ph) { return ph < 0.16 ? ph / 0.16 : Math.pow(1 - (ph - 0.16) / 0.84, 2.1); }
 
-  var seeds = [], stars = [], heights = [];
-  for (var i = 0; i < bars; i++) { seeds.push(Math.random() * 6.28); heights.push(0); }
-  for (var s = 0; s < 42; s++) stars.push({ x: Math.random(), y: Math.random(), r: Math.random() * 1.3 + 0.3, tw: Math.random() * 6.28, sp: 0.02 + Math.random() * 0.05 });
-
-  size();
-  window.addEventListener('resize', size);
-
-  function bar(i, mid, h, a, b) {
-    var bw = W / bars, x = i * bw + bw * 0.25, w = bw * 0.5, y = mid - h / 2;
-    var g = ctx.createLinearGradient(0, y, 0, y + h);
-    g.addColorStop(0, a); g.addColorStop(1, b);
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    if (ctx.roundRect) ctx.roundRect(x, y, w, h, Math.min(w / 2, 3));
-    else ctx.rect(x, y, w, h);
-    ctx.fill();
-  }
-
-  function drawStars(tt) {
+  function drawStars(tt, be) {
     for (var i = 0; i < stars.length; i++) {
       var st = stars[i];
       var x = ((st.x + tt * st.sp * 0.12) % 1) * W, y = st.y * H;
-      ctx.globalAlpha = 0.3 + 0.5 * (Math.sin(tt * 2 + st.tw) * 0.5 + 0.5);
+      ctx.globalAlpha = Math.min(0.25 + 0.4 * (Math.sin(tt * 2 + st.tw) * 0.5 + 0.5) + be * 0.35, 1);
       ctx.fillStyle = i % 3 === 0 ? '#c68bff' : '#ffffff';
-      ctx.beginPath(); ctx.arc(x, y, st.r, 0, 6.283); ctx.fill();
+      ctx.beginPath(); ctx.arc(x, y, st.r + be * 0.6, 0, 6.283); ctx.fill();
     }
     ctx.globalAlpha = 1;
   }
-
-  function drawOcean(tt, a, b) {
+  function drawOcean(tt) {
     ctx.globalAlpha = 0.22; ctx.lineWidth = 1.4;
     for (var L = 0; L < 3; L++) {
       ctx.beginPath();
-      for (var x = 0; x <= W; x += 6) {
-        var y = H * (0.32 + L * 0.22) + Math.sin(x * 0.03 + tt * 1.5 + L) * (6 + L * 3);
-        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-      }
-      ctx.strokeStyle = L % 2 ? a : b; ctx.stroke();
+      for (var x = 0; x <= W; x += 6) { var y = H * (0.34 + L * 0.2) + Math.sin(x * 0.028 + tt * 1.3 + L) * (6 + L * 3); x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+      ctx.strokeStyle = L % 2 ? colA : colB; ctx.stroke();
     }
     ctx.globalAlpha = 1;
   }
 
   function draw(now) {
     now = now || performance.now();
-    var tt = (now - startT) / 1000;
-    var phase = (tt / beatSec) % 1;
-    // smooth attack ramp then eased decay — the beat is felt, never jerked
-    var env = phase < 0.16 ? phase / 0.16 : Math.pow(1 - (phase - 0.16) / 0.84, 2.1);
-    var cols = waveColors(), a = cols[0], b = cols[1];
+    var dt = Math.min((now - lastT) / 1000, 0.05); lastT = now;
+    var tt = (now - startT) / 1000, mid = H / 2;
     ctx.clearRect(0, 0, W, H);
-    if (scene === 'galaxy') drawStars(tt);
-    else if (scene === 'ocean') drawOcean(tt, a, b);
-    var mid = H / 2;
-    for (var i = 0; i < bars; i++) {
-      var flow = Math.sin(tt * 3 + seeds[i]) * 0.5 + 0.5;
-      var center = Math.max(1 - Math.abs(i / (bars - 1) - 0.5) * 1.3, 0.12);
-      var target = (0.12 + flow * 0.16 + env * 0.62 * center) * (H * 0.94);
-      heights[i] += (target - heights[i]) * 0.3;   // ease toward target = fluid follow
-      bar(i, mid, heights[i], a, b);
+    var be = envAt((tt / beatSec) % 1);
+    if (scene === 'galaxy') drawStars(tt, be);
+    else if (scene === 'ocean') drawOcean(tt);
+
+    // faint baseline anchor
+    ctx.globalAlpha = 0.16; ctx.strokeStyle = colA; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, mid); ctx.lineTo(W, mid); ctx.stroke(); ctx.globalAlpha = 1;
+
+    var decay = scene === 'galaxy' ? 2.7 : scene === 'ocean' ? 1.7 : 2.1;
+    var settle = scene === 'galaxy' ? 3.5 : scene === 'ocean' ? 4.5 : 7;
+    var ease = 1 - Math.pow(0.0015, dt * settle);   // frame-rate independent
+    ctx.fillStyle = grad;
+    ctx.shadowColor = colA; ctx.shadowBlur = scene === 'studio' ? 7 : 12;
+    var bw = W / bars;
+    for (var j = 0; j < bars; j++) {
+      var f = j / (bars - 1);                              // 0 bass (left) → 1 treble (right)
+      var ph = ((tt / beatSec) - f * 0.18) % 1; if (ph < 0) ph += 1;   // L→R sweep
+      var env = ph < 0.16 ? ph / 0.16 : Math.pow(1 - (ph - 0.16) / 0.84, decay);
+      var amp = 0.55 + (1 - f) * 0.7;                      // bass hits harder
+      var flow = Math.sin(tt * (2 + f * 5) + seeds[j]) * 0.5 + 0.5;    // treble flickers faster
+      var base = 0.10 + flow * (0.08 + f * 0.14);
+      var target = (base + env * 0.60 * amp) * (H * 0.9);
+      heights[j] += (target - heights[j]) * ease;
+      var h = heights[j], x = j * bw + bw * 0.25, w = bw * 0.5, y = mid - h / 2;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x, y, w, h, Math.min(w / 2, 3)); else ctx.rect(x, y, w, h);
+      ctx.fill();
     }
+    ctx.shadowBlur = 0;
     if (!reduce) requestAnimationFrame(draw);
   }
 
   function drawStatic() {
-    var cols = waveColors(), mid = H / 2;
-    ctx.clearRect(0, 0, W, H);
-    for (var i = 0; i < bars; i++) {
-      var center = Math.max(1 - Math.abs(i / (bars - 1) - 0.5) * 1.3, 0.12);
-      bar(i, mid, (0.2 + center * 0.5) * (H * 0.9), cols[0], cols[1]);
+    if (!grad) buildGrad();
+    var mid = H / 2, bw = W / bars;
+    ctx.clearRect(0, 0, W, H); ctx.fillStyle = grad;
+    for (var j = 0; j < bars; j++) {
+      var f = j / (bars - 1), h = (0.14 + (1 - f) * 0.5) * (H * 0.85);
+      var x = j * bw + bw * 0.25, w = bw * 0.5, y = mid - h / 2;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x, y, w, h, Math.min(w / 2, 3)); else ctx.rect(x, y, w, h);
+      ctx.fill();
     }
   }
 
+  readColors(); size();
+  window.addEventListener('resize', size);
   if (reduce) drawStatic(); else requestAnimationFrame(draw);
 
-  /* scene switch */
+  /* ---- scene switch ---- */
   var sceneRow = document.getElementById('scenes');
   sceneRow.addEventListener('click', function (ev) {
     var c = ev.target.closest('.scene-chip'); if (!c) return;
-    [].forEach.call(sceneRow.children, function (x) { x.classList.remove('on'); });
-    c.classList.add('on');
+    [].forEach.call(sceneRow.children, function (x) { x.classList.remove('on'); x.setAttribute('aria-pressed', 'false'); });
+    c.classList.add('on'); c.setAttribute('aria-pressed', 'true');
     scene = c.getAttribute('data-scene');
     npCard.setAttribute('data-scene', scene);
+    readColors();
     if (reduce) drawStatic();
   });
 
-  /* ---- elapsed timer ---- */
-  if (!reduce) {
-    var secs = 84;
-    var te = document.getElementById('tElapsed');
-    setInterval(function () {
-      secs = (secs + 1) % 237;
-      var m = Math.floor(secs / 60), s = secs % 60;
-      te.textContent = m + ':' + (s < 10 ? '0' : '') + s;
-    }, 1000);
-  }
+  /* ---- elapsed + progress ---- */
+  var te = document.getElementById('tElapsed'), prog = document.getElementById('prog');
+  var secs = 84, TOT = 237;
+  function paintTime() { var m = Math.floor(secs / 60), ss = secs % 60; te.textContent = m + ':' + (ss < 10 ? '0' : '') + ss; prog.style.width = (secs / TOT * 100).toFixed(1) + '%'; }
+  paintTime();
+  if (!reduce) setInterval(function () { secs = (secs + 1) % TOT; paintTime(); }, 1000);
 
   /* ---- tip interaction ---- */
-  var chips = document.getElementById('chips');
-  var tipAmt = document.getElementById('tipAmt');
-  var selected = 5;
+  var live = document.getElementById('live');
+  var chips = document.getElementById('chips'), tipLabel = document.getElementById('tipLabel'), selected = 5;
   chips.addEventListener('click', function (ev) {
     var c = ev.target.closest('.chip'); if (!c) return;
-    [].forEach.call(chips.children, function (x) { x.classList.remove('on'); });
-    c.classList.add('on');
+    [].forEach.call(chips.children, function (x) { x.classList.remove('on'); x.setAttribute('aria-pressed', 'false'); });
+    c.classList.add('on'); c.setAttribute('aria-pressed', 'true');
     selected = parseInt(c.getAttribute('data-amt'), 10);
-    tipAmt.textContent = '$' + selected;
+    if (!tipBtn.classList.contains('ok')) tipLabel.textContent = 'Send $' + selected + ' tip';
   });
 
-  var tipBtn = document.getElementById('tipBtn');
-  var toast = document.getElementById('toast');
-  var raised = document.getElementById('raised');
+  var tipBtn = document.getElementById('tipBtn'), toast = document.getElementById('toast'), raised = document.getElementById('raised');
+  function addRaised(v) {
+    raised.textContent = parseInt(raised.textContent, 10) + v;
+    raised.classList.remove('bump'); void raised.offsetWidth; raised.classList.add('bump');
+  }
+  var lastUserTip = 0;
   tipBtn.addEventListener('click', function () {
-    var val = parseInt(raised.textContent, 10) + selected;
-    raised.textContent = val;
-    toast.textContent = 'Sent $' + selected + ' to Lena 💛';
-    toast.classList.add('show');
+    lastUserTip = Date.now();
+    addRaised(selected);
+    toast.textContent = 'Sent $' + selected + ' to Lena 💛'; toast.classList.add('show');
+    tipBtn.classList.add('ok'); tipLabel.textContent = 'Sent — tip again ✓';
+    live.textContent = 'Sent $' + selected + ' tip to Lena. $' + raised.textContent + ' raised tonight.';
     clearTimeout(tipBtn._tm);
-    tipBtn._tm = setTimeout(function () { toast.classList.remove('show'); }, 1500);
-    if (!reduce) spawnCoins(Math.min(3 + Math.floor(selected / 3), 9));
+    tipBtn._tm = setTimeout(function () {
+      toast.classList.remove('show'); tipBtn.classList.remove('ok');
+      tipLabel.textContent = 'Send $' + selected + ' tip';
+    }, 1400);
+    if (!reduce) spawnCoins(Math.min(3 + Math.round(selected / 2), 12));
   });
 
   function spawnCoins(count) {
     var rect = tipBtn.getBoundingClientRect();
-    for (var i = 0; i < count; i++) {
-      (function (i) {
+    for (var k = 0; k < count; k++) {
+      (function () {
         var coin = document.createElement('div');
-        coin.className = 'coin';
-        coin.textContent = '$';
-        var startX = rect.width * (0.3 + Math.random() * 0.4);
-        coin.style.left = startX + 'px';
+        coin.className = 'coin'; coin.textContent = '$';
+        coin.style.left = (rect.width * (0.3 + Math.random() * 0.4)) + 'px';
         coin.style.top = '10px';
         tipBtn.appendChild(coin);
-        var driftX = (Math.random() - 0.5) * 120;
-        var rise = 90 + Math.random() * 70;
-        var rot = (Math.random() - 0.5) * 360;
+        var dx = (Math.random() - 0.5) * 130, rise = 90 + Math.random() * 80, rot = (Math.random() - 0.5) * 360;
         requestAnimationFrame(function () {
-          coin.style.transition = 'transform .9s cubic-bezier(.2,.7,.3,1), opacity .9s ease';
-          coin.style.transform = 'translate(' + driftX + 'px,' + (-rise) + 'px) rotate(' + rot + 'deg)';
+          coin.style.transition = 'transform .95s cubic-bezier(.2,.7,.3,1), opacity .95s ease';
+          coin.style.transform = 'translate(' + dx + 'px,' + (-rise) + 'px) rotate(' + rot + 'deg)';
           coin.style.opacity = '0';
         });
-        setTimeout(function () { coin.remove(); }, 950);
-      })(i);
+        setTimeout(function () { coin.remove(); }, 1000);
+      })();
     }
+  }
+
+  /* ---- try-a-tip CTA: flash the demo card ---- */
+  function flashCard() { npCard.classList.remove('flash'); void npCard.offsetWidth; npCard.classList.add('flash'); }
+  document.getElementById('tryBtn').addEventListener('click', flashCard);
+  document.getElementById('closeBtn').addEventListener('click', flashCard);
+
+  /* ---- live social proof (other fans tipping) ---- */
+  if (!reduce) {
+    var names = ['Ana', 'Marco', 'Dee', 'Priya', 'Sam', 'Noah', 'Kaya', 'Leo', 'Mika', 'Ruth'];
+    var pop = document.getElementById('pop');
+    (function loop() {
+      setTimeout(function () {
+        if (Date.now() - lastUserTip > 3000) {
+          var amt = [2, 3, 5, 5, 8, 10][Math.floor(Math.random() * 6)];
+          addRaised(amt);
+          pop.innerHTML = names[Math.floor(Math.random() * names.length)] + ' tipped <span class="amt">$' + amt + '</span>';
+          pop.classList.remove('show'); void pop.offsetWidth; pop.classList.add('show');
+        }
+        loop();
+      }, 4000 + Math.random() * 5000);
+    })();
+
+    var room = document.getElementById('room');
+    setInterval(function () { room.textContent = 44 + Math.floor(Math.random() * 8); }, 4000);
   }
 })();
 </script>
