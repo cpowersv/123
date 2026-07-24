@@ -66,13 +66,14 @@
         if (entry.p.hue !== undefined) $('hue').value = Math.round(entry.p.hue * 100);
         [...wrap.children].forEach((x) => x.classList.remove('on'));
         c.classList.add('on');
-        const prefix = { genre: '🎵 ', mood: '🎬 ', look: '🎞 ', art: '🎨 ' }[group] || '';
+        const prefix = { theme: '🌈 ', genre: '🎵 ', mood: '🎬 ', look: '🎞 ', art: '🎨 ' }[group] || '';
         toast(prefix + entry.name);
         kickIdle();
       });
       wrap.appendChild(c);
     });
   }
+  buildChips('themeChips', Commands.THEMES, 'theme');
   buildChips('genreChips', Commands.GENRES, 'genre');
   buildChips('moodChips', Commands.CINEMATIC, 'mood');
   buildChips('artChips', Commands.ARTSTYLES, 'art');

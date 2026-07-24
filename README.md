@@ -66,6 +66,13 @@ python3 -m http.server 8000
 
 Pick an audio source on the welcome screen, then type a mood and hit **Go**.
 
+## 🌈 Themes
+
+One tap = a whole vibe (scene + palette + film look + pace), no photo needed:
+**Neon City Drive · Miami Nights · Pop · Surreal · Cyberpunk · Deep Space ·
+Underwater · Aurora · Golden Hour · Fire & Ember · Vaporwave · Psychedelic ·
+Rave · Matrix · Noir · Zen.** Pick from the Theme row in 🎚 Style, or type one.
+
 ## 🎚️ Genres & cinematic moods
 
 Open **🎚 Style** (or press `G`) to pick from **19 genres** (Techno, DnB, Lo-fi,

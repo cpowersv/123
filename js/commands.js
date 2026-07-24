@@ -71,6 +71,43 @@
     { name: 'Cinematic', keys: ['cinematic look', 'cinema', 'film look', 'letterbox', 'teal orange', 'widescreen'], p: { look: 5 } },
   ];
 
+  /* ---- Themes: one-tap complete vibes (scene + palette + look + pace) ---- */
+  // scene indices match visualizer.js SCENES order (0-19 are the non-photo scenes).
+  const THEMES = [
+    { name: 'Neon City Drive', keys: ['neon city drive', 'city drive', 'night drive', 'outrun'],
+      p: { scene: 3, hue: 0.78, saturation: 1.0, intensity: 0.85, look: 0, cutSpeed: 8, beatKick: 1.0 } },
+    { name: 'Miami Nights',    keys: ['miami nights', 'miami', 'sunset synth'],
+      p: { scene: 3, hue: 0.9, saturation: 1.0, intensity: 0.8, look: 0, cutSpeed: 8, beatKick: 1.1 } },
+    { name: 'Pop',             keys: ['pop theme', 'poppy', 'bubblegum pop'],
+      p: { scene: 2, hue: 0.9, saturation: 1.0, intensity: 0.9, look: 4, cutSpeed: 5, beatKick: 1.2 } },
+    { name: 'Surreal',         keys: ['surreal', 'surrealish', 'dreamscape', 'dali dream'],
+      p: { scene: 5, hue: 0.75, saturation: 0.7, intensity: 0.7, look: 2, cutSpeed: 12, beatKick: 0.6, transDur: 2.0 } },
+    { name: 'Cyberpunk',       keys: ['cyberpunk theme', 'blade runner', 'neon noir'],
+      p: { scene: 0, hue: 0.78, saturation: 1.0, intensity: 0.9, look: 0, cutSpeed: 6, beatKick: 1.2 } },
+    { name: 'Deep Space',      keys: ['deep space', 'cosmic', 'galaxy', 'interstellar'],
+      p: { scene: 4, hue: 0.66, saturation: 0.7, intensity: 0.7, cutSpeed: 12, beatKick: 0.8, transDur: 1.8 } },
+    { name: 'Underwater',      keys: ['underwater', 'deep ocean', 'abyss', 'aquatic'],
+      p: { scene: 1, hue: 0.54, saturation: 0.8, intensity: 0.55, cutSpeed: 14, beatKick: 0.6, transDur: 2.0 } },
+    { name: 'Aurora',          keys: ['aurora theme', 'northern lights', 'borealis'],
+      p: { scene: 5, hue: 0.4, saturation: 0.85, intensity: 0.7, cutSpeed: 12, beatKick: 0.7, transDur: 1.8 } },
+    { name: 'Golden Hour',     keys: ['golden hour', 'warm sunset', 'autumn'],
+      p: { scene: 5, hue: 0.07, saturation: 0.9, intensity: 0.65, look: 5, cutSpeed: 11, beatKick: 0.8 } },
+    { name: 'Fire & Ember',    keys: ['fire theme', 'ember', 'lava', 'inferno'],
+      p: { scene: 0, hue: 0.02, saturation: 1.0, intensity: 0.95, cutSpeed: 5, beatKick: 1.4 } },
+    { name: 'Vaporwave',       keys: ['vaporwave', 'aesthetic', 'retro wave'],
+      p: { scene: 3, hue: 0.85, saturation: 0.8, intensity: 0.7, look: 3, cutSpeed: 9, beatKick: 0.9 } },
+    { name: 'Psychedelic',     keys: ['psychedelic', 'trippy', 'acid', 'kaleido'],
+      p: { scene: 2, hue: 0.0, saturation: 1.0, intensity: 0.9, cutSpeed: 6, beatKick: 1.2 } },
+    { name: 'Rave',            keys: ['rave theme', 'festival theme', 'edm drop'],
+      p: { scene: 0, hue: 0.78, saturation: 1.0, intensity: 1.0, cutSpeed: 3.5, beatKick: 1.6, transDur: 0.6 } },
+    { name: 'Matrix',          keys: ['matrix theme', 'hacker', 'digital rain'],
+      p: { scene: 17, hue: 0.0, saturation: 0.9, intensity: 0.8, cutSpeed: 10, beatKick: 1.0 } },
+    { name: 'Noir',            keys: ['noir theme', 'detective', 'monochrome'],
+      p: { scene: 9, hue: 0.6, saturation: 0.2, intensity: 0.55, look: 1, cutSpeed: 12, beatKick: 0.7 } },
+    { name: 'Zen',             keys: ['zen', 'calm theme', 'meditation', 'spa'],
+      p: { scene: 15, hue: 0.4, saturation: 0.6, intensity: 0.4, cutSpeed: 18, beatKick: 0.3, transDur: 2.2 } },
+  ];
+
   /* ---- Art styles: recognizable painting / movement looks ---- */
   // Scene indices map to visualizer.js SCENES order.
   const ARTSTYLES = [
@@ -135,7 +172,7 @@
   function sortByKeyLen(list) {
     return list.slice().sort((a, b) => Math.max(...b.keys.map(k => k.length)) - Math.max(...a.keys.map(k => k.length)));
   }
-  const ALL = sortByKeyLen([...GENRES, ...ARTSTYLES, ...CINEMATIC, ...LOOKS, ...MOODS]);
+  const ALL = sortByKeyLen([...THEMES, ...GENRES, ...ARTSTYLES, ...CINEMATIC, ...LOOKS, ...MOODS]);
 
   function parseCommand(text) {
     // Normalize, then match longest phrases first, consuming each match so a
@@ -170,5 +207,5 @@
   const findGenre = (q) => findIn(GENRES, q);
   const findMood = (q) => findIn(CINEMATIC, q);
 
-  global.Commands = { parseCommand, SCENE, GENRES, CINEMATIC, LOOKS, ARTSTYLES, findGenre, findMood, slug };
+  global.Commands = { parseCommand, SCENE, THEMES, GENRES, CINEMATIC, LOOKS, ARTSTYLES, findGenre, findMood, slug };
 })(window);
