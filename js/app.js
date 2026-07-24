@@ -78,6 +78,55 @@
   buildChips('artChips', Commands.ARTSTYLES, 'art');
   buildChips('lookChips', Commands.LOOKS, 'look');
 
+  /* ---------------- Photo drop-in ---------------- */
+  const PHOTO_SCENE = SCENE_NAMES.indexOf('Photo');
+
+  // Average the image's colors into a hue/saturation the visuals adopt.
+  function extractPalette(img) {
+    try {
+      const cv = document.createElement('canvas');
+      cv.width = 40; cv.height = 40;
+      const g = cv.getContext('2d');
+      g.drawImage(img, 0, 0, 40, 40);
+      const d = g.getImageData(0, 0, 40, 40).data;
+      let r = 0, gg = 0, b = 0, n = 0;
+      for (let i = 0; i < d.length; i += 4) { r += d[i]; gg += d[i + 1]; b += d[i + 2]; n++; }
+      r /= n * 255; gg /= n * 255; b /= n * 255;
+      const max = Math.max(r, gg, b), min = Math.min(r, gg, b), dl = max - min;
+      let h = 0;
+      if (dl > 0) {
+        if (max === r) h = ((gg - b) / dl) % 6;
+        else if (max === gg) h = (b - r) / dl + 2;
+        else h = (r - gg) / dl + 4;
+        h /= 6; if (h < 0) h += 1;
+      }
+      const s = max === 0 ? 0 : dl / max;
+      return { hue: h, saturation: Math.min(1, s * 1.2 + 0.2) };
+    } catch (e) { return null; }
+  }
+
+  function loadPhoto(file) {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      viz.setPhoto(img);
+      const pal = extractPalette(img);
+      if (pal) {
+        director.setHue(pal.hue);
+        director.setSaturation(pal.saturation);
+        $('hue').value = Math.round(pal.hue * 100);
+      }
+      if (PHOTO_SCENE >= 0) director.cutTo(PHOTO_SCENE);
+      toast('🖼 Your photo is live — reacting to the music');
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = () => toast('Could not load that image.');
+    img.src = url;
+  }
+
+  $('btnPhoto').addEventListener('click', () => $('photoInput').click());
+  $('photoInput').addEventListener('change', (e) => { if (e.target.files[0]) loadPhoto(e.target.files[0]); });
+
   /* ---------------- Autopilot (self-running show) ---------------- */
   const autopilot = { on: false, timer: 0, interval: 20 };
 

@@ -11,7 +11,7 @@
                   'Aurora', 'Ridges', 'Chrome', 'Cells', 'Plasma', 'Fractal', 'Spectrum',
                   'Waveform', 'Hex', 'Rings', 'Fireflies',
                   'Vortex', 'Matrix', 'Sunburst', 'Warp',
-                  'Van Gogh', 'Pop Art', 'Watercolor', 'Impressionist'];
+                  'Van Gogh', 'Pop Art', 'Watercolor', 'Impressionist', 'Photo'];
 
   const VERT = `
     attribute vec2 aPos;
@@ -38,6 +38,9 @@
   uniform float uLook;        // film/aesthetic grade index
   uniform sampler2D uFFT;     // 1D frequency spectrum (0..1 across bins)
   uniform sampler2D uWave;    // 1D time-domain waveform (0..1, centered at 0.5)
+  uniform sampler2D uPhoto;   // user-dropped photo
+  uniform float uHasPhoto;    // 1 when a photo is loaded
+  uniform vec2 uPhotoRes;     // photo pixel dimensions
 
   #define PI 3.14159265
 
@@ -510,7 +513,34 @@
     return col*(0.7 + uLevel*0.5);
   }
 
+  // ---- Scene 24: your photo, made reactive ----
+  vec3 scenePhoto(vec2 uv){
+    if(uHasPhoto < 0.5){
+      return hsv2rgb(vec3(fract(uHue + uTime*0.05), uSat*0.5, 0.18 + 0.15*sin(uTime)));
+    }
+    vec2 sc = gl_FragCoord.xy / uRes;                 // 0..1 screen
+    float imgA = uPhotoRes.x / uPhotoRes.y;
+    float scrA = uRes.x / uRes.y;
+    vec2 tc = sc;                                     // cover-fit the image
+    if(scrA > imgA) tc.y = (sc.y - 0.5)*(imgA/scrA) + 0.5;
+    else            tc.x = (sc.x - 0.5)*(scrA/imgA) + 0.5;
+    vec2 c = tc - 0.5;
+    c *= 1.0 - uBass*0.12 - uBeat*0.06;               // zoom-pulse on the beat
+    float rr = length(c);
+    c += normalize(c + 1e-4) * sin(rr*24.0 - uTime*3.0) * 0.008 * (uBass + uLevel); // ripple
+    tc = c + 0.5;
+    float ca = uTreble*0.012;                         // chromatic shimmer on highs
+    vec3 col;
+    col.r = texture2D(uPhoto, tc + vec2(ca, 0.0)).r;
+    col.g = texture2D(uPhoto, tc).g;
+    col.b = texture2D(uPhoto, tc - vec2(ca, 0.0)).b;
+    col *= 0.72 + uLevel*0.5 + uBeat*0.22;            // breathe with the music
+    float vig = 1.0 - dot(uv, uv)*0.25;
+    return col * clamp(vig, 0.2, 1.0);
+  }
+
   vec3 renderScene(int idx, vec2 uv){
+    if(idx==24) return scenePhoto(uv);
     if(idx==0) return sceneTunnel(uv);
     if(idx==1) return sceneNebula(uv);
     if(idx==2) return sceneKaleido(uv);
@@ -650,9 +680,12 @@
       gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 
       const names = ['uRes','uTime','uBass','uMid','uTreble','uLevel','uBeat',
-                     'uHue','uSat','uIntensity','uScene','uSceneNext','uTrans','uWarp','uLook','uFFT','uWave'];
+                     'uHue','uSat','uIntensity','uScene','uSceneNext','uTrans','uWarp','uLook','uFFT','uWave',
+                     'uPhoto','uHasPhoto','uPhotoRes'];
       this.u = {};
       names.forEach(n => this.u[n] = gl.getUniformLocation(prog, n));
+      this.hasPhoto = false;
+      this.photoRes = [1, 1];
 
       // 1D data textures (updated per frame from the analyser).
       gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
@@ -668,6 +701,26 @@
       };
       this.fftTex = makeDataTex();   // frequency spectrum
       this.waveTex = makeDataTex();  // time-domain waveform
+
+      // RGBA photo texture (user-dropped image).
+      this.photoTex = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, this.photoTex);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 255]));
+    }
+
+    /* Upload a dropped image as the photo texture. */
+    setPhoto(img) {
+      const gl = this.gl;
+      gl.bindTexture(gl.TEXTURE_2D, this.photoTex);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+      this.photoRes = [img.naturalWidth || img.width, img.naturalHeight || img.height];
+      this.hasPhoto = true;
     }
 
     resize() {
@@ -712,6 +765,11 @@
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, audio.wave.length, 1, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, audio.wave);
       }
       gl.uniform1i(u.uWave, 1);
+      gl.activeTexture(gl.TEXTURE2);
+      gl.bindTexture(gl.TEXTURE_2D, this.photoTex);
+      gl.uniform1i(u.uPhoto, 2);
+      gl.uniform1f(u.uHasPhoto, this.hasPhoto ? 1 : 0);
+      gl.uniform2f(u.uPhotoRes, this.photoRes[0], this.photoRes[1]);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
   }
