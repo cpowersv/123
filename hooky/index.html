@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hooky — Screw housework and running errands</title>
+  <meta name="description" content="One Saturday a month, you’re off duty. Hooky puts you in a small group of local moms that meets the first Saturday of every month. No swiping. No guilt.">
+
+  <!-- Social preview -->
+  <meta property="og:title" content="Hooky — Screw housework and running errands">
+  <meta property="og:description" content="One Saturday a month, you’re off duty. A standing plan with moms near you.">
+  <meta property="og:type" content="website">
+
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👟</text></svg>">
+</head>
+<body>
+
+<!-- ============================ HERO ============================ -->
+<header class="hero">
+  <div class="wrap">
+    <div class="wordmark">Hooky</div>
+
+    <p class="eyebrow">First Saturday of every month · 10am</p>
+
+    <h1>Screw housework<br>and running errands.</h1>
+
+    <p class="lede">
+      One Saturday a month, you’re off duty. We put you in a small group of moms
+      who live near you, and you all get together and have fun. Same weekend,
+      every month, so nobody has to organize anything.
+    </p>
+
+    <!-- ---------------- Signup ---------------- -->
+    <form id="signup" class="signup" novalidate>
+      <p class="signup-title">Want in? Tell us where to find you.</p>
+
+      <div class="row">
+        <label class="field">
+          <span>Email</span>
+          <input type="email" name="email" id="email" placeholder="you@email.com"
+                 autocomplete="email" required>
+        </label>
+
+        <label class="field field-sm">
+          <span>ZIP code</span>
+          <input type="text" name="zip" id="zip" placeholder="12345"
+                 inputmode="numeric" maxlength="5" autocomplete="postal-code" required>
+        </label>
+      </div>
+
+      <div class="row">
+        <label class="field">
+          <span>Kids’ ages <em>(optional)</em></span>
+          <input type="text" name="kids" id="kids" placeholder="4 and 18 months">
+        </label>
+
+        <label class="field field-sm">
+          <span>You’d rather</span>
+          <select name="style" id="style">
+            <option value="either">Either is fine</option>
+            <option value="kid-free">Come without the kids</option>
+            <option value="kids-welcome">Bring the kids</option>
+          </select>
+        </label>
+      </div>
+
+      <button type="submit" id="submitBtn">Save my seat</button>
+
+      <p class="fineprint" id="formNote">
+        No spam, no newsletter. We’ll email you once when there’s a group near you.
+      </p>
+    </form>
+
+    <div class="done" id="done" hidden>
+      <p class="done-big">You’re on the list. 🎉</p>
+      <p>We’ll email you the minute there’s a group near <span id="doneZip">you</span>.
+         In the meantime — go sit down.</p>
+    </div>
+  </div>
+
+  <div class="stamp" aria-hidden="true">
+    <span>Laundry<br>can wait</span>
+  </div>
+</header>
+
+<!-- ============================ HOW ============================ -->
+<section class="how">
+  <div class="wrap">
+    <h2>How it works</h2>
+
+    <ol class="steps">
+      <li>
+        <span class="num">1</span>
+        <h3>Answer four questions</h3>
+        <p>Where you live, how old your kids are, weekday or weekend, and whether
+           you want them along. That’s the whole signup.</p>
+      </li>
+      <li>
+        <span class="num">2</span>
+        <h3>We put you in a group</h3>
+        <p>Eight to twelve moms near you, with kids around the same age. A real
+           person does the matching — you’re not swiping through anybody.</p>
+      </li>
+      <li>
+        <span class="num">3</span>
+        <h3>You show up</h3>
+        <p>First Saturday of every month, same time, somewhere easy. It’s already
+           on the calendar. We send the reminder. You just come.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============================ NOT ============================ -->
+<section class="not">
+  <div class="wrap">
+    <h2>What this isn’t</h2>
+
+    <ul class="nope">
+      <li><s>Swiping through other moms.</s> Nobody gets judged by a photo.</li>
+      <li><s>Coffee alone with one stranger.</s> If it’s awkward, there are ten
+          other people at the table.</li>
+      <li><s>Another group chat that dies in a week.</s> The date is fixed before
+          anyone has to volunteer.</li>
+      <li><s>Guilt.</s> No streaks, no reminders about what you missed, no
+          to-do list. The whole point is the day you don’t do any of that.</li>
+    </ul>
+
+    <p class="kicker">
+      It’s one standing plan a month, with moms who get it.
+    </p>
+  </div>
+</section>
+
+<!-- ============================ FAQ ============================ -->
+<section class="faq">
+  <div class="wrap">
+    <h2>The obvious questions</h2>
+
+    <dl>
+      <dt>Can I bring my kids?</dt>
+      <dd>Some groups are kid-friendly, some are strictly kid-free. You pick when
+          you sign up, and we match you accordingly. Nobody shows up to a
+          surprise.</dd>
+
+      <dt>What does it cost?</dt>
+      <dd>Nothing to join. You buy your own coffee.</dd>
+
+      <dt>Where do you meet?</dt>
+      <dd>Public places only — a café, a park, a patio. Never someone’s house
+          until the group knows each other and decides otherwise.</dd>
+
+      <dt>What if I can’t make one?</dt>
+      <dd>Then you skip it and come the next month. There’s always a next month.
+          That’s the entire idea.</dd>
+
+      <dt>Is it safe?</dt>
+      <dd>Every member verifies a phone number, groups meet in public, and each
+          group has a host who can remove anyone. We’re small and careful on
+          purpose.</dd>
+    </dl>
+  </div>
+</section>
+
+<!-- ============================ FOOTER ============================ -->
+<footer>
+  <div class="wrap">
+    <p class="foot-mark">Hooky</p>
+    <p class="foot-tag">Screw Housework And Running Errands.</p>
+    <p class="foot-small">Starting with one town. Yours, maybe.</p>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
