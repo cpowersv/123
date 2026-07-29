@@ -1,0 +1,300 @@
+/* ============================================================
+   Hooky — landing page
+   Warm, hand-made, a little rebellious. No frameworks, no fonts
+   to download, one accent colour doing most of the work.
+   ============================================================ */
+
+:root {
+  --cream:    #FDF6EE;
+  --paper:    #FFFCF8;
+  --ink:      #241E1A;
+  --ink-soft: #5C5049;
+  --rule:     #E6D8C8;
+  --flame:    #E04E2B;   /* accent — buttons, numbers, the stamp */
+  --marigold: #F5B841;
+
+  --serif: ui-serif, Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+  --sans:  system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  width: min(760px, 100% - 44px);
+  margin-inline: auto;
+}
+
+h1, h2, h3 { font-family: var(--serif); font-weight: 700; line-height: 1.08; }
+
+/* ---------------- Hero ---------------- */
+.hero {
+  position: relative;
+  padding: 46px 0 74px;
+  background:
+    radial-gradient(120% 80% at 82% -10%, #FBE6CE 0%, transparent 60%),
+    var(--cream);
+  border-bottom: 1px solid var(--rule);
+  overflow: hidden;
+}
+
+.wordmark {
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: var(--flame);
+}
+
+.eyebrow {
+  margin: 52px 0 14px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(40px, 8.4vw, 74px);
+  letter-spacing: -.02em;
+}
+
+.lede {
+  max-width: 33em;
+  margin: 26px 0 0;
+  font-size: clamp(17px, 2.2vw, 20px);
+  color: var(--ink-soft);
+}
+
+/* The rotated sticker in the corner. Purely decorative — it needs room to
+   sit clear of the headline, so it only appears on wide screens. */
+.stamp {
+  position: absolute;
+  top: 34px;
+  right: 30px;
+  display: grid;
+  place-items: center;
+  width: 152px;
+  height: 152px;
+  transform: rotate(13deg);
+  border: 2px solid var(--flame);
+  border-radius: 50%;
+  color: var(--flame);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 20px;
+  line-height: 1.15;
+  text-align: center;
+  opacity: .85;
+}
+
+/* ---------------- Signup form ---------------- */
+.signup {
+  margin-top: 40px;
+  padding: 26px 24px 22px;
+  max-width: 560px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  box-shadow: 0 12px 30px -22px rgba(36, 30, 26, .45);
+}
+
+.signup-title {
+  margin: 0 0 18px;
+  font-family: var(--serif);
+  font-size: 21px;
+  font-weight: 700;
+}
+
+/* Gap does the spacing in both directions, so a row that wraps on a narrow
+   screen sits at the same rhythm as two separate rows. */
+.row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+
+.field { flex: 1 1 220px; display: block; }
+.field-sm { flex: 0 1 150px; }
+
+.field > span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  color: var(--ink-soft);
+}
+.field em { font-style: normal; font-weight: 400; opacity: .7; }
+
+input, select {
+  width: 100%;
+  padding: 11px 13px;
+  font: inherit;
+  font-size: 16px;             /* 16px keeps iOS from zooming on focus */
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 9px;
+  transition: border-color .15s, box-shadow .15s;
+}
+select { appearance: none; background-image: none; }
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--flame);
+  box-shadow: 0 0 0 3px rgba(224, 78, 43, .16);
+}
+
+input.bad { border-color: var(--flame); background: #FFF4F1; }
+
+button {
+  width: 100%;
+  margin-top: 6px;
+  padding: 15px 20px;
+  font-family: var(--sans);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: .01em;
+  color: #fff;
+  background: var(--flame);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform .12s, filter .15s;
+}
+button:hover { filter: brightness(1.07); }
+button:active { transform: translateY(1px); }
+button[disabled] { opacity: .6; cursor: default; }
+
+.fineprint {
+  margin: 13px 0 0;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+}
+.fineprint.err { color: var(--flame); font-weight: 600; }
+
+/* Success state, swapped in for the form */
+.done {
+  margin-top: 40px;
+  padding: 30px 26px;
+  max-width: 560px;
+  background: var(--paper);
+  border: 2px solid var(--flame);
+  border-radius: 14px;
+}
+.done p { margin: 0; color: var(--ink-soft); }
+.done-big {
+  margin: 0 0 8px !important;
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--ink) !important;
+}
+
+/* ---------------- Sections ---------------- */
+section { padding: 66px 0; border-bottom: 1px solid var(--rule); }
+section h2 {
+  margin: 0 0 34px;
+  font-size: clamp(28px, 4.6vw, 38px);
+  letter-spacing: -.015em;
+}
+
+.how { background: var(--paper); }
+
+.steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 30px; }
+.steps li { position: relative; padding-left: 58px; }
+.steps h3 { margin: 0 0 6px; font-size: 21px; }
+.steps p { margin: 0; color: var(--ink-soft); }
+
+.num {
+  position: absolute;
+  left: 0;
+  top: -2px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--flame);
+  border: 2px solid var(--flame);
+  border-radius: 50%;
+}
+
+.nope { margin: 0; padding: 0; list-style: none; display: grid; gap: 17px; }
+.nope li {
+  padding-left: 26px;
+  position: relative;
+  color: var(--ink-soft);
+}
+.nope li::before {
+  content: '✕';
+  position: absolute;
+  left: 0;
+  top: 1px;
+  font-weight: 700;
+  color: var(--flame);
+}
+.nope s { color: var(--ink); text-decoration-thickness: 2px; }
+
+.kicker {
+  margin: 34px 0 0;
+  font-family: var(--serif);
+  font-size: clamp(21px, 3.2vw, 26px);
+  line-height: 1.3;
+}
+
+.faq { background: var(--paper); }
+.faq dl { margin: 0; }
+.faq dt {
+  margin-top: 24px;
+  font-weight: 700;
+  font-size: 17.5px;
+}
+.faq dt:first-child { margin-top: 0; }
+.faq dd { margin: 5px 0 0; color: var(--ink-soft); }
+
+/* ---------------- Footer ---------------- */
+footer { padding: 54px 0 66px; text-align: center; }
+.foot-mark {
+  margin: 0;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: var(--flame);
+}
+.foot-tag {
+  margin: 12px 0 0;
+  font-family: var(--serif);
+  font-size: clamp(19px, 3vw, 24px);
+}
+.foot-small { margin: 18px 0 0; font-size: 14px; color: var(--ink-soft); }
+
+/* ---------------- Narrower screens ---------------- */
+@media (max-width: 1000px) {
+  .stamp { display: none; }
+}
+
+@media (max-width: 620px) {
+  .hero { padding-top: 34px; }
+  .eyebrow { margin-top: 38px; }
+  section { padding: 52px 0; }
+  .field-sm { flex: 1 1 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
